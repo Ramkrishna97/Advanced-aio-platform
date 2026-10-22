@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "subject": "Subject name",
+  "topicId": 0,
+  "topic": "Topic title",
+  "questionnaires": [
+    {
+      "id": "optional-stable-question-id",
+      "question": "Question text",
+      "options": ["First answer", "Second answer", "Third answer", "Fourth answer"],
+      "correctAnswer": 0
+    }
+  ]
+}
