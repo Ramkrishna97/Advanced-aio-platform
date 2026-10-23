@@ -1,0 +1,134 @@
+ONEPLACE BACKEND API TEST CRITERIA
+==================================
+
+Scope: direct requests to each service, then the same public routes through the API gateway. Run against isolated H2 databases and isolated upload/snapshot directories. Use a unique email and unique titles for each run. Do not run write tests against production data.
+
+Common expected results for every route in the inventory below:
+- GET: HTTP 200 with the documented JSON or file response, unless the named item is missing (404). A read does not change database state. Repeat after service restart to verify persisted records are returned.
+- POST: HTTP 200 (or the route's declared success status) and a response body with the created/updated ID or result, except void actions. Read the item back, restart the service, and read again to prove persistence. Invalid input must produce a 4xx response and no new record or file.
+- PUT: HTTP 200 with updated values. Read back and restart to verify persistence. Wrong owner or invalid input must not change the original record.
+- DELETE: 2xx with no unhandled exception. A subsequent read must show the item absent or the relationship removed. Restart to confirm deletion persists.
+- Authenticated routes: no token returns 401; a wrong role returns 403 where role restricted. Other users must not see private notes, drafts, carts, or orders.
+- Multipart and media routes: upload bytes, read/download bytes, compare size/content, and verify files survive restart. Bad media type or missing file returns 4xx without a persisted file reference.
+- Exception check: no 500 response, stack trace, or inconsistent partial DB state for a valid request; negative cases return the expected 4xx response.
+
+Cross-service criteria:
+1. Gateway -> each service: call the route with the same token and body through port 8080 (or the isolated gateway port). Expect the same status and response as the direct service call.
+2. Classroom -> auth: register teacher/student, create topic and comment; author names should match the account/JWT name, and the public display-name lookup used for legacy topics should return the teacher's name.
+3. Classroom -> feed: create a classroom lesson, list feed; legacy lesson appears once, with stable ID after repeated requests.
+4. Studio -> feed: teacher creates a draft and publishes it; feed returns one post with sourceDraftId, and republishing is idempotent.
+5. Quiz -> feed: teacher creates quiz, publishes a feed post with quizId; student starts and submits the quiz and reads persisted result.
+6. Cart -> catalog -> delivery: seller creates stocked product; buyer adds to cart, prepares and completes payment. Stock decreases once, order persists, delivery order is readable, and repeated completion does not duplicate reservation or delivery.
+7. Failure path: invalid service key on catalog inventory/delivery returns 403 with no DB change. If delivery is unavailable during checkout, the paid order remains durable, checkout returns promptly, and cart retries the idempotent delivery notification when delivery returns. If catalog is unavailable before payment, checkout fails without confirming an order.
+
+Execution record (2026-10-23): see end of file for observed results and limitations.
+
+API INVENTORY (method, public path, expected response/state)
+------------------------------------------------------------
+auth-service | POST /api/auth/register | HTTP 200; response AuthResponse {token, user}; write/result persists where applicable
+auth-service | POST /api/auth/login | HTTP 200; response AuthResponse {token, user}; write/result persists where applicable
+auth-service | GET /api/auth/me | HTTP 200; response UserView {id, name, email, seller, role, roles, hasPhoto, photoUpdatedAt}; no DB write
+auth-service | POST /api/auth/seller | HTTP 200; response AuthResponse {token, user}; write/result persists where applicable
+auth-service | GET /api/auth/activities | HTTP 200; response ActivityView[] {id, action, createdAt}; no DB write
+auth-service | POST /api/auth/activities | HTTP 200; response empty body; write/result persists where applicable
+auth-service | POST /api/auth/me/photo | HTTP 200; response UserView {id, name, email, seller, role, roles, hasPhoto, photoUpdatedAt}; write/result persists where applicable
+auth-service | GET /api/auth/me/photo | HTTP 200; response file bytes; no DB write
+auth-service | GET /api/auth/users/{id}/photo | HTTP 200; response file bytes; no DB write
+auth-service | GET /api/auth/users/{id}/display-name | HTTP 200; response object; no DB write
+auth-service | POST /api/auth/forgot-password | HTTP 200; response object; write/result persists where applicable
+auth-service | POST /api/auth/reset-password | HTTP 200; response object; write/result persists where applicable
+cart-service | GET /api/cart | HTTP 200; response CartItem[] {id, userId, productId, quantity}; no DB write
+cart-service | POST /api/cart/items | HTTP 200; response CartItem[] {id, userId, productId, quantity}; write/result persists where applicable
+cart-service | POST /api/cart/merge | HTTP 200; response CartItem[] {id, userId, productId, quantity}; write/result persists where applicable
+cart-service | DELETE /api/cart/items/{productId} | HTTP 200; response CartItem[] {id, userId, productId, quantity}; deletion persists
+cart-service | GET /api/orders | HTTP 200; response OrderView[] {id, total, createdAt, invoiceNumber, deliveryStatus, items}; no DB write
+cart-service | GET /api/seller/orders | HTTP 200; response OrderView[] {id, total, createdAt, invoiceNumber, deliveryStatus, items}; no DB write
+cart-service | POST /api/orders/prepare-payment | HTTP 200; response PaymentView {id, total, expiresAt}; write/result persists where applicable
+cart-service | POST /api/orders/payments/{paymentId}/complete | HTTP 200; response OrderView {id, total, createdAt, invoiceNumber, deliveryStatus, items}; write/result persists where applicable
+cart-service | POST /api/orders/payments/{paymentId}/cancel | HTTP 200; response empty body; write/result persists where applicable
+catalog-service | GET /api/products | HTTP 200; response Product[] {id, sellerId, name, description, category, price, currency, stock, imageFile}; no DB write
+catalog-service | GET /api/products/{id} | HTTP 200; response Product {id, sellerId, name, description, category, price, currency, stock, imageFile}; no DB write
+catalog-service | GET /api/products/mine | HTTP 200; response Product[] {id, sellerId, name, description, category, price, currency, stock, imageFile}; no DB write
+catalog-service | POST /api/products/{id}/image | HTTP 200; response Product {id, sellerId, name, description, category, price, currency, stock, imageFile}; write/result persists where applicable
+catalog-service | GET /api/products/{id}/image | HTTP 200; response string; no DB write
+catalog-service | POST /api/products | HTTP 200; response Product {id, sellerId, name, description, category, price, currency, stock, imageFile}; write/result persists where applicable
+catalog-service | PUT /api/products/{id} | HTTP 200; response Product {id, sellerId, name, description, category, price, currency, stock, imageFile}; write/result persists where applicable
+catalog-service | POST /internal/inventory/reserve | HTTP 200; response Snapshot[] {productId, sellerId, name, price, quantity}; write/result persists where applicable
+catalog-service | POST /internal/inventory/release | HTTP 200; response empty body; write/result persists where applicable
+classroom-service | GET /api/classroom/materials | HTTP 200; response Material[] {id, title, content, fileName, originalName, contentType, description, topicId, teacherId, createdAt}; no DB write
+classroom-service | POST /api/classroom/materials | HTTP 200; response Material {id, title, content, fileName, originalName, contentType, description, topicId, teacherId, createdAt}; write/result persists where applicable
+classroom-service | POST /api/classroom/materials/upload | HTTP 200; response Material {id, title, content, fileName, originalName, contentType, description, topicId, teacherId, createdAt}; write/result persists where applicable
+classroom-service | GET /api/classroom/materials/{id}/file | HTTP 200; response string; no DB write
+classroom-service | GET /api/classroom/modules | HTTP 200; response LearningModule[] {id, title, subject, teacherId, createdAt}; no DB write
+classroom-service | GET /api/classroom/feed | HTTP 200; response FeedItem[] {moduleId, moduleTitle, subject, id, title, description, videoFile, videoName, videoType, createdAt, authorName, likeCount, likedByCurrentUser}; no DB write
+classroom-service | POST /api/classroom/topics/{id}/like | HTTP 200; response LikeView {likeCount, likedByCurrentUser}; write/result persists where applicable
+classroom-service | POST /api/classroom/modules | HTTP 200; response LearningModule {id, title, subject, teacherId, createdAt}; write/result persists where applicable
+classroom-service | PUT /api/classroom/modules/{id} | HTTP 200; response LearningModule {id, title, subject, teacherId, createdAt}; write/result persists where applicable
+classroom-service | DELETE /api/classroom/modules/{id} | HTTP 200; response empty body; deletion persists
+classroom-service | GET /api/classroom/modules/{id}/topics | HTTP 200; response LearningTopic[] {id, moduleId, teacherId, authorName, title, description, videoFile, videoType, videoName, createdAt}; no DB write
+classroom-service | POST /api/classroom/modules/{id}/topics | HTTP 200; response LearningTopic {id, moduleId, teacherId, authorName, title, description, videoFile, videoType, videoName, createdAt}; write/result persists where applicable
+classroom-service | PUT /api/classroom/topics/{id} | HTTP 200; response LearningTopic {id, moduleId, teacherId, authorName, title, description, videoFile, videoType, videoName, createdAt}; write/result persists where applicable
+classroom-service | DELETE /api/classroom/topics/{id} | HTTP 200; response empty body; deletion persists
+classroom-service | POST /api/classroom/topics/{id}/video | HTTP 200; response LearningTopic {id, moduleId, teacherId, authorName, title, description, videoFile, videoType, videoName, createdAt}; write/result persists where applicable
+classroom-service | DELETE /api/classroom/topics/{id}/video | HTTP 200; response empty body; deletion persists
+classroom-service | GET /api/classroom/topics/{id}/quiz | HTTP 200; response QuizQuestionView[] {id, question, options, correctAnswer}; no DB write
+classroom-service | POST /api/classroom/topics/{id}/quiz/questions | HTTP 200; response QuizQuestionView {id, question, options, correctAnswer}; write/result persists where applicable
+classroom-service | POST /api/classroom/topics/{id}/quiz/submit | HTTP 200; response QuizResult {total, correct, results}; computes a result but does not persist an attempt
+classroom-service | GET /api/classroom/topics/{id}/resources | HTTP 200; response ResourceView[] {id, title, description, content, originalName, contentType, hasFile, available}; no DB write
+classroom-service | POST /api/classroom/topics/{id}/resources | HTTP 200; response ResourceView {id, title, description, content, originalName, contentType, hasFile, available}; write/result persists where applicable
+classroom-service | GET /api/classroom/topics/{id}/resources/{resourceId}/file | HTTP 200; response file bytes; no DB write
+classroom-service | DELETE /api/classroom/topics/{id}/resources/{resourceId} | HTTP 200; response empty body; deletion persists
+classroom-service | GET /api/classroom/topics/{id}/video-ticket | HTTP 200; response object; no DB write
+classroom-service | GET /api/classroom/topics/{id}/video | HTTP 200; response file bytes; no DB write
+classroom-service | GET /api/classroom/topics/{id}/comments | HTTP 200; response TopicComment[] {id, topicId, materialId, parentId, studentId, authorName, replyToName, text, createdAt}; no DB write
+classroom-service | POST /api/classroom/topics/{id}/comments | HTTP 200; response TopicComment {id, topicId, materialId, parentId, studentId, authorName, replyToName, text, createdAt}; write/result persists where applicable
+classroom-service | GET /api/classroom/topics/{id}/notes | HTTP 200; response TopicStudentNote[] {id, topicId, studentId, title, text, createdAt}; no DB write
+classroom-service | POST /api/classroom/topics/{id}/notes | HTTP 200; response TopicStudentNote {id, topicId, studentId, title, text, createdAt}; write/result persists where applicable
+classroom-service | PUT /api/classroom/notes/{id} | HTTP 200; response TopicStudentNote {id, topicId, studentId, title, text, createdAt}; write/result persists where applicable
+classroom-service | DELETE /api/classroom/notes/{id} | HTTP 200; response empty body; deletion persists
+feed-service | GET /api/feed | HTTP 200; response PageView {items, page, size, hasNext}; no DB write
+feed-service | GET /api/feed/{id} | HTTP 200; response Post {id, legacyTopicId, sourceDraftId, teacherId, authorName, title, body, type, resourceUrl, quizId, createdAt}; no DB write
+feed-service | POST /api/feed | HTTP 200; response Post {id, legacyTopicId, sourceDraftId, teacherId, authorName, title, body, type, resourceUrl, quizId, createdAt}; write/result persists where applicable
+feed-service | POST /api/feed/media | HTTP 200; response UploadView {url, type}; write/result persists where applicable
+feed-service | PUT /api/feed/media/uploads/{id}/{index} | HTTP 200; response object; write/result persists where applicable
+feed-service | GET /api/feed/media/uploads/{id} | HTTP 200; response integer[]; no DB write
+feed-service | POST /api/feed/media/uploads/{id}/complete | HTTP 200; response UploadView {url, type}; write/result persists where applicable
+feed-service | GET /api/feed/media/{name} | HTTP 200; response file bytes; no DB write
+feed-service | GET /api/feed/{id}/comments | HTTP 200; response FeedComment[] {id, postId, userId, authorName, text, createdAt}; no DB write
+feed-service | POST /api/feed/{id}/comments | HTTP 200; response FeedComment {id, postId, userId, authorName, text, createdAt}; write/result persists where applicable
+feed-service | GET /api/feed/{id}/notes | HTTP 200; response FeedNote[] {id, postId, userId, text, createdAt}; no DB write
+feed-service | POST /api/feed/{id}/notes | HTTP 200; response FeedNote {id, postId, userId, text, createdAt}; write/result persists where applicable
+order-delivery-service | POST /api/delivery/orders | HTTP 200; response DeliveryOrder {id, orderId, userId, itemsJson, paymentStatus, status, acknowledged, history}; write/result persists where applicable
+order-delivery-service | GET /api/delivery/orders/{orderId} | HTTP 200; response View {orderId, paymentStatus, status, history}; no DB write
+order-delivery-service | POST /api/delivery/orders/{orderId}/acknowledge | HTTP 200; response empty body; write/result persists where applicable
+quiz-service | POST /api/quizzes | HTTP 200; response QuizView {id, name, module, subject, topic, timeMinutes, questions}; write/result persists where applicable
+quiz-service | GET /api/quizzes/{id} | HTTP 200; response QuizView {id, name, module, subject, topic, timeMinutes, questions}; no DB write
+quiz-service | POST /api/quizzes/{id}/start | HTTP 200; response StartView {attemptId, quiz, remainingSeconds}; write/result persists where applicable
+quiz-service | POST /api/quizzes/attempts/{id}/submit | HTTP 200; response Result {attemptId, score, timeTakenSeconds, rank, right, wrong, skipped, analysis}; write/result persists where applicable
+quiz-service | POST /api/quizzes/attempts/{id}/warning | HTTP 200; response Result {attemptId, score, timeTakenSeconds, rank, right, wrong, skipped, analysis}; write/result persists where applicable
+quiz-service | GET /api/quizzes/attempts/{id}/result | HTTP 200; response Result {attemptId, score, timeTakenSeconds, rank, right, wrong, skipped, analysis}; no DB write
+studio-editor-service | GET /api/studio | HTTP 200; response StudioDraft[] {id, teacherId, title, body, type, resourceUrl, quizId, updatedAt, publishedAt}; no DB write
+studio-editor-service | POST /api/studio | HTTP 200; response StudioDraft {id, teacherId, title, body, type, resourceUrl, quizId, updatedAt, publishedAt}; write/result persists where applicable
+studio-editor-service | PUT /api/studio/{id} | HTTP 200; response StudioDraft {id, teacherId, title, body, type, resourceUrl, quizId, updatedAt, publishedAt}; write/result persists where applicable
+studio-editor-service | POST /api/studio/{id}/publish | HTTP 200; response StudioDraft {id, teacherId, title, body, type, resourceUrl, quizId, updatedAt, publishedAt}; write/result persists where applicable
+
+OBSERVED RESULTS (2026-10-23)
+-----------------------------
+Environment: isolated services on ports 18080-18088, separate temporary H2 databases and upload directories. Discovery was also started on 18761. Existing application data was not used for write tests.
+Build: all nine API service boot jars compiled successfully. Discovery health returned 200 and /eureka/apps returned 200.
+Automated API run: Backend/api-smoke-test.py -> 121/121 checks passed. Every controller route above was exercised directly or as part of a service-to-service request. Gateway proxy calls to auth, catalog, cart, classroom, feed, studio, quiz, and delivery returned expected responses. Classroom lessons appeared in feed exactly once across repeated reads.
+Responses and state: success responses were 200; expected rejection responses were 401, 403, 404, or 409 as asserted. Created records were read back; deleted records disappeared; buyer checkout reduced catalog stock, cleared the cart, created a durable order, and created a delivery record. Cancellation restored reserved stock. Uploaded photo, product image, classroom material, topic resource, classroom video, and feed media bytes were downloaded and compared with uploads.
+Persistence after restart: catalog service was restarted against the same isolated H2 database. Product ID 36 retained its updated name, stock=4, and image file reference. A prior restart also returned matching values through the gateway for product ID 6.
+Failure and recovery: delivery service was stopped during checkout. Cart returned HTTP 200 for durable paid order ID 34 in 0.03 seconds, then retried publication after delivery restarted; delivery GET returned order ID 34. Catalog was stopped before payment preparation: cart returned HTTP 503 and the buyer's order count remained unchanged. Invalid internal service keys returned 403 without a valid write.
+Inventory completeness: the 86 method/path entries above exactly matched the 86 operations returned by the eight API services' /v3/api-docs endpoints (12 auth, 9 catalog, 9 cart, 31 classroom, 12 feed, 4 studio, 6 quiz, 3 delivery). The gateway's /api/** proxy was checked separately through all eight services.
+Defects found and corrected: exception responses were incorrectly converted to 401 by JWT filters; quiz creation returned recursively serialized malformed JSON; delivery had an unintended default security gate; public display-name lookup was blocked; Kafka absence delayed delivery requests; and cart lacked a durable delivery publication retry.
+Infrastructure limit: no Kafka broker was available, so Kafka event consumption itself was not verified. Eureka registry health and API were checked; API services in this isolated run used explicit URLs with Eureka registration disabled, so dynamic service registration/load balancing was not verified.
+Reproduction: from the repository root run `powershell.exe -NoProfile -ExecutionPolicy Bypass -File Backend/run-api-tests.ps1`. The launcher builds jars, starts isolated services, waits for health, runs `python -u Backend/api-smoke-test.py`, and stops only its own Java processes. Use `-SkipBuild` to reuse current jars. The script generates unique account emails each run and exits nonzero on a failed assertion. The clean launcher run completed 121/121 checks and stopped 20 isolated Java processes.
+
+FOLLOW-UP RESULTS (2026-10-23)
+------------------------------
+Clean isolated launcher run: 125/125 HTTP and response assertions passed, followed by 38/38 direct H2 database assertions. The launcher built the changed classroom service and stopped its isolated processes before querying database files. No production or existing application data was used for writes.
+Database expectations verified: four account rows; four account-creation, two sign-in, one seller, one custom, and one profile-photo activity rows, all linked to accounts. Catalog stock was 4 after a completed order and a cancelled reservation. Cart stored one paid order with a delivery publication flag, one COMPLETED reservation, and one CANCELLED reservation. Delivery stored the same order ID, buyer ID, and item snapshot as cart, plus an acknowledged order and timestamped status history. Feed stored one imported classroom lesson and one post linked to the published studio draft. Quiz definition, question, completed attempt, and warning on an open attempt persisted.
+Defect found by direct database inspection: deleting a classroom topic left orphan comments and likes. Topic and module deletion now remove their dependent comments, likes, private notes, topic resources, and generated topic quiz file. A second topic with comment, like, and quiz was deleted through its parent module; the direct database check found zero remaining modules, topics, orphan comments, likes, notes, topic resources, or generated topic quiz files. The two standalone classroom materials remained.
+Logging scope: the coded persistent records cover auth user activity and delivery status history. The services do not define a common database transaction or interservice request audit table. Therefore this run verifies the existing business records and those two history mechanisms; it cannot claim that every request or interservice hop is centrally logged. No Kafka broker was present, so Kafka message delivery/consumption remains unverified. Eureka dynamic registration remains unverified because this isolated run used explicit service URLs.
+Cross-service deletion observation: the feed's imported classroom lesson row remains after its source classroom topic is deleted. The current feed import is a persisted copy and no delete synchronization is coded; whether the copy should be removed requires a product decision.
