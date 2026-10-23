@@ -39,7 +39,7 @@ call "%PROJECT_ROOT%stop.bat"
 
 if not exist "%PROJECT_ROOT%resources\database" mkdir "%PROJECT_ROOT%resources\database"
 if not exist "%PROJECT_ROOT%resources\data" mkdir "%PROJECT_ROOT%resources\data"
-for %%S in (auth cart catalog classroom) do (
+for %%S in (auth cart catalog classroom feed studio quiz delivery) do (
   if not exist "%PROJECT_ROOT%resources\database\%%S.mv.db" if exist "%BACKEND%\data\%%S.mv.db" copy /Y "%BACKEND%\data\%%S.mv.db" "%PROJECT_ROOT%resources\database\%%S.mv.db" >nul
 )
 
@@ -66,7 +66,7 @@ if errorlevel 1 (
 
 echo Building the backend services...
 pushd "%BACKEND%"
-call gradlew.bat :gateway:bootJar :auth-service:bootJar :catalog-service:bootJar :cart-service:bootJar :classroom-service:bootJar :discovery-service:bootJar
+call gradlew.bat :gateway:bootJar :auth-service:bootJar :catalog-service:bootJar :cart-service:bootJar :classroom-service:bootJar :feed-service:bootJar :studio-editor-service:bootJar :quiz-service:bootJar :order-delivery-service:bootJar :discovery-service:bootJar
 if errorlevel 1 (
   popd
   echo Backend build failed. Review the Gradle output above.
@@ -88,6 +88,20 @@ if errorlevel 1 (
   pushd "%BACKEND%"
   start "OnePlace classroom-service" /min java.exe -jar "classroom-service\build\libs\classroom-service-0.1.0.jar"
   popd
+)
+for %%S in (feed-service studio-editor-service quiz-service order-delivery-service) do (
+  set "SERVICE_PORT="
+  if "%%S"=="feed-service" set "SERVICE_PORT=8085"
+  if "%%S"=="studio-editor-service" set "SERVICE_PORT=8086"
+  if "%%S"=="quiz-service" set "SERVICE_PORT=8087"
+  if "%%S"=="order-delivery-service" set "SERVICE_PORT=8088"
+  curl.exe --fail --silent --output NUL --max-time 2 "http://127.0.0.1:!SERVICE_PORT!/actuator/health" >nul 2>&1
+  if errorlevel 1 (
+    echo Starting %%S on port !SERVICE_PORT!...
+    pushd "%BACKEND%"
+    start "OnePlace %%S" /min java.exe -jar "%%S\build\libs\%%S-0.1.0.jar"
+    popd
+  )
 )
 curl.exe --fail --silent --output NUL --max-time 2 "http://127.0.0.1:8081/actuator/health" >nul 2>&1
 if errorlevel 1 (
@@ -121,19 +135,19 @@ if errorlevel 1 (
 echo Waiting for backend health endpoints and the React page...
 for /l %%I in (1,1,90) do (
   set "READY=0"
-  for %%P in (8080 8081 8082 8083 8084 8761 3000) do (
+  for %%P in (8080 8081 8082 8083 8084 8085 8086 8087 8088 8761 3000) do (
     set "CHECK_PATH=actuator/health"
     if %%P EQU 3000 set "CHECK_PATH="
     curl.exe --fail --silent --output NUL --max-time 2 "http://127.0.0.1:%%P/!CHECK_PATH!" >nul 2>&1
     if not errorlevel 1 set /a READY+=1
   )
-  if !READY! EQU 7 goto :open_dashboard
-  if !READY! LSS 6 echo Waiting for backend services: !READY!/6 health endpoints ready
-  if !READY! GEQ 6 echo Backend ready; waiting for React dashboard on port 3000
+  if !READY! EQU 11 goto :open_dashboard
+  if !READY! LSS 10 echo Waiting for backend services: !READY!/10 health endpoints ready
+  if !READY! GEQ 10 echo Backend ready; waiting for React dashboard on port 3000
   ping.exe -n 3 127.0.0.1 >nul
 )
 
-echo Startup timed out. Check health endpoints at 8080-8084 and 8761, and React at 3000.
+echo Startup timed out. Check health endpoints at 8080-8088 and 8761, and React at 3000.
 echo Backend actuator health is available at each service port; React serves the dashboard on port 3000.
 pause
 exit /b 1
