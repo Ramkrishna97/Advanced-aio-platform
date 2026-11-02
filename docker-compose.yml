@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "8080:8080"
+    environment:
+      - AUTH_JWT_SECRET=local-demo-secret-change-before-deployment-2026
+    restart: always
+
+  frontend:
+    build:
+      context: ./UI/play
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: always
