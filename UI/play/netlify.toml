@@ -1,0 +1,17 @@
+# Netlify Configuration File (UI/play)
+
+[build]
+  command = "npm run build"
+  publish = "build"
+
+[build.environment]
+  NODE_VERSION = "20"
+  CI = "false"
+  NETLIFY_SKIP_SUBMODULES = "true"
+  GIT_SUBMODULES = "false"
+
+# Single Page Application (SPA) redirect rule for client-side routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

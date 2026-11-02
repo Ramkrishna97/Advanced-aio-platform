@@ -1,0 +1,43 @@
+================================================================================
+ALL-MS-SERVICE FRONTEND (UI/play) ARCHITECTURE, DEPENDENCIES & CONFIGURATION
+================================================================================
+
+This document outlines the frontend packages, dependencies, build configuration,
+API proxy settings, component tree, and their respective roles in the React application.
+
+--------------------------------------------------------------------------------
+BUILD CONFIGURATION & DEPENDENCIES (`package.json`)
+--------------------------------------------------------------------------------
+- Framework: React 19 (`react`, `react-dom`)
+- Build System: React Scripts 5.0.1 (`react-scripts`)
+- Styling & UI:
+  - Tailwind CSS (`tailwindcss`, `postcss`, `autoprefixer`)
+  - Bootstrap (`bootstrap`)
+  - Framer Motion (`framer-motion`)
+  - Lucide React (`lucide-react`) - Icon set
+- Testing:
+  - Testing Library (`@testing-library/react`, `@testing-library/jest-dom`, `@testing-library/user-event`)
+- API Proxy Configuration:
+  - `"proxy": "http://localhost:8080"` (Routes development API requests directly to the Spring Cloud API Gateway).
+
+--------------------------------------------------------------------------------
+UI COMPONENT STRUCTURE & ROLES (`UI/play/src/`)
+--------------------------------------------------------------------------------
+└── UI/play/src
+    ├── index.js
+    │   - Role: React entry point.
+    │   - Action: Mounts the root `<App />` component into the DOM.
+    ├── index.css & App.css
+    │   - Role: Styling stylesheets.
+    │   - Action: Provide global styles, responsive grid layouts, theme support (light and dark modes), modal backdrops, comment thread layouts, avatar styling, and video player styling.
+    ├── api.js
+    │   - Role: HTTP API Client helper.
+    │   - Action: Manages fetch requests, authentication token headers, error handling, and activity recording.
+    ├── App.js
+    │   - Role: Main application shell & state manager.
+    │   - Action: Manages global navigation tabs (Home, Marketplace, Orders, Seller Studio, Classroom), user authentication sessions, shopping cart state, order history, profile dialogs, profile photo uploads with cropping (`PhotoCropDialog`), and theme toggling.
+    └── Classroom.js
+        - Role: Learning space feature component.
+        - Action: Renders course outline sidebar, modules, topics, video lessons with playback speed control, study material downloads, interactive quizzes with grading, student-private topic notes, and public threaded discussions.
+        - Sub-components / Helpers:
+          - `CommentHeader`: Renders commenter profile photos (`/api/auth/users/{studentId}/photo`), commenter name, and formatted comment date & time for both top-level comments and nested replies.

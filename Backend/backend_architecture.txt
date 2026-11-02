@@ -1,0 +1,123 @@
+================================================================================
+ALL-MS-SERVICE BACKEND ARCHITECTURE, DEPENDENCIES & CONFIGURATION
+================================================================================
+
+This document outlines the packages, classes, their individual roles, service
+configurations (ports, database URLs, credentials), and shared dependencies
+across all backend microservices.
+
+--------------------------------------------------------------------------------
+SHARED BUILD & DEPENDENCY CONFIGURATION
+--------------------------------------------------------------------------------
+- Java Toolchain: Java 17
+- Spring Boot Version: 3.5.6
+- Spring Cloud Version: 2025.0.0
+- Common Dependencies (All Services):
+  - org.springframework.boot:spring-boot-starter-web
+  - org.springframework.boot:spring-boot-starter-validation
+  - org.springframework.boot:spring-boot-starter-actuator
+  - org.springframework.cloud:spring-cloud-starter-netflix-eureka-client (except discovery-service)
+  - org.springframework.cloud:spring-cloud-starter-openfeign (except discovery-service)
+  - org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13 (Swagger UI)
+
+--------------------------------------------------------------------------------
+1. API GATEWAY SERVICE (gateway)
+--------------------------------------------------------------------------------
+- Port: 8080
+- Package: com.example.dashboard.gateway
+- Configuration:
+  - app.jwt.secret: ${AUTH_JWT_SECRET:local-demo-secret-change-before-deployment-2026}
+  - services.auth: http://localhost:8081
+  - services.catalog: http://localhost:8082
+  - services.cart: http://localhost:8083
+  - services.classroom: http://localhost:8084
+- Classes & Roles:
+  ├── GatewayApplication.java (Bootstrap service entry point)
+  ├── ProxyController.java (Reverse proxy routing `/api/**` requests to downstream microservices)
+  └── ApiSecurityConfig.java (Gateway security and request filter rules)
+
+--------------------------------------------------------------------------------
+2. AUTHENTICATION & USER SERVICE (auth-service)
+--------------------------------------------------------------------------------
+- Port: 8081
+- Package: com.example.dashboard.auth
+- Configuration & Database:
+  - Database URL: jdbc:h2:file:../resources/database/auth;DB_CLOSE_ON_EXIT=FALSE
+  - Username: sa
+  - Password: (empty)
+  - JWT Secret: ${AUTH_JWT_SECRET:local-demo-secret-change-before-deployment-2026}
+  - Storage Directories: app.user-dir=../resources/users, app.snapshot-dir=../resources/data
+- Classes & Roles:
+  ├── AuthApplication.java (Service bootstrap)
+  ├── AuthController.java (REST Controller for registration, login, JWT validation, profile management, and user photo uploads/retrieval via `/api/auth/users/{id}/photo`)
+  ├── AppUser.java (JPA Entity persisting accounts, roles, and profile photo metadata)
+  ├── ApiSecurityConfig.java (Security config with JWT filter; permits public access to `/api/auth/users/*/photo`, login, register, password reset)
+  ├── ActivityRecorder.java (Component tracking user activity audit trails)
+  └── DataSnapshot.java (Snapshot exporter for account states)
+
+--------------------------------------------------------------------------------
+3. PRODUCT CATALOG & INVENTORY SERVICE (catalog-service)
+--------------------------------------------------------------------------------
+- Port: 8082
+- Package: com.example.dashboard.catalog
+- Configuration & Database:
+  - Database URL: jdbc:h2:file:../resources/database/catalog;DB_CLOSE_ON_EXIT=FALSE
+  - Username: sa
+  - Password: (empty)
+  - Product Resource Dir: ../resources/products
+- Classes & Roles:
+  ├── CatalogApplication.java (Service bootstrap)
+  ├── CatalogController.java (REST Controller for product browsing, categories, and seller listings)
+  ├── InventoryController.java (REST Controller for inventory and stock management)
+  ├── Product.java (JPA Entity modeling marketplace items, pricing, stock, and image files)
+  ├── ApiSecurityConfig.java (Security config for catalog APIs)
+  └── DataSnapshot.java (Snapshot exporter for catalog states)
+
+--------------------------------------------------------------------------------
+4. SHOPPING CART & ORDERS SERVICE (cart-service)
+--------------------------------------------------------------------------------
+- Port: 8083
+- Package: com.example.dashboard.cart
+- Configuration & Database:
+  - Database URL: jdbc:h2:file:../resources/database/cart;DB_CLOSE_ON_EXIT=FALSE
+  - Username: sa
+  - Password: (empty)
+  - Catalog Service URL: http://localhost:8082
+- Classes & Roles:
+  ├── CartApplication.java (Service bootstrap)
+  ├── CartController.java (REST Controller managing cart items, checkout, invoices, and seller order fulfillment)
+  ├── CartItem.java (JPA Entity for cart line items)
+  ├── ShopOrder.java (JPA Entity for placed orders and delivery statuses)
+  ├── ApiSecurityConfig.java (Security config for cart APIs)
+  └── DataSnapshot.java (Snapshot exporter for cart/order states)
+
+--------------------------------------------------------------------------------
+5. CLASSROOM & LEARNING SERVICE (classroom-service)
+--------------------------------------------------------------------------------
+- Port: 8084
+- Package: com.example.dashboard.classroom & com.example.dashboard.classroom.video
+- Configuration & Database:
+  - Database URL: jdbc:h2:file:../resources/database/classroom;DB_CLOSE_ON_EXIT=FALSE
+  - Username: sa
+  - Password: (empty)
+  - Study Material Resource Dir: ../resources/classroom
+  - Quiz Dir: ../resources/classroom/quizzes
+  - Video Storage Dir: ../resources/classroom/videos (Managed by VideoStore)
+- Classes & Roles:
+  ├── ClassroomApplication.java (Service bootstrap)
+  ├── LearningController.java (REST Controller for modules, topics, videos, materials, quizzes, student notes, and comments)
+  ├── LearningEntities.java (JPA Entities for LearningModule, LearningTopic, TopicComment [storing studentId, authorName, text, timestamp], and TopicStudentNote)
+  ├── Material.java (JPA Entity for downloadable/text study resources)
+  ├── QuizStore.java (Manages quiz questions, options, and grading submissions)
+  ├── video/VideoStore.java (Component dedicated to storing, resolving, and deleting video files in `resources/classroom/videos/`)
+  ├── ApiSecurityConfig.java (Security config for classroom APIs)
+  └── DataSnapshot.java (Snapshot exporter for classroom states)
+
+--------------------------------------------------------------------------------
+6. SERVICE DISCOVERY (discovery-service)
+--------------------------------------------------------------------------------
+- Port: 8761
+- Package: com.example.dashboard.discovery
+- Configuration: Eureka Server registry (self-registration disabled)
+- Classes & Roles:
+  └── DiscoveryApplication.java (Eureka Server bootstrap for service registration and routing lookup)

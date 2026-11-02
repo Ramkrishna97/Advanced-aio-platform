@@ -1,0 +1,1 @@
+package com.example.dashboard.quiz; import org.springframework.boot.*; import org.springframework.boot.autoconfigure.*; @SpringBootApplication public class QuizApplication{public static void main(String[]a){SpringApplication.run(QuizApplication.class,a);}}
