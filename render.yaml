@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: all-ms-backend
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: AUTH_JWT_SECRET
+        value: "local-demo-secret-change-before-deployment-2026"
