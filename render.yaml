@@ -6,6 +6,8 @@ services:
     dockerfilePath: ./Dockerfile
     envVars:
       - key: PORT
-        value: 8080
+        value: "8080"
+      - key: SERVER_ADDRESS
+        value: "0.0.0.0"
       - key: AUTH_JWT_SECRET
         value: "local-demo-secret-change-before-deployment-2026"
