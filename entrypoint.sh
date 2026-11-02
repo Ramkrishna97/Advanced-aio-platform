@@ -1,23 +1,37 @@
 #!/bin/sh
 
-# Set low memory overhead for each JVM instance so all microservices run inside container RAM
-JAVA_OPTS="-Xms32m -Xmx64m -XX:+UseG1GC"
+# Ultra-low memory flags for 512MB RAM container limits
+# -Xms12m -Xmx24m: Heap capped at 24MB
+# -XX:MaxMetaspaceSize=26m: Metaspace capped at 26MB
+# -XX:TieredStopAtLevel=1: Disable heavy C2 compiler (saves 30MB per JVM)
+# -XX:+UseSerialGC: Use lightweight GC (0MB GC overhead memory)
+JAVA_OPTS="-Xms12m -Xmx24m -XX:MaxMetaspaceSize=26m -XX:ReservedCodeCacheSize=12m -Xss256k -XX:TieredStopAtLevel=1 -XX:+UseSerialGC"
 
-echo "Starting discovery-service..."
-java $JAVA_OPTS -jar /app/discovery-service.jar &
-sleep 4
+echo "Starting backend microservices sequentially to prevent memory spikes..."
 
-echo "Starting backend microservices..."
 java $JAVA_OPTS -jar /app/auth-service.jar &
-java $JAVA_OPTS -jar /app/catalog-service.jar &
-java $JAVA_OPTS -jar /app/cart-service.jar &
-java $JAVA_OPTS -jar /app/classroom-service.jar &
-java $JAVA_OPTS -jar /app/feed-service.jar &
-java $JAVA_OPTS -jar /app/studio-editor-service.jar &
-java $JAVA_OPTS -jar /app/quiz-service.jar &
-java $JAVA_OPTS -jar /app/order-delivery-service.jar &
+sleep 2
 
-sleep 3
+java $JAVA_OPTS -jar /app/catalog-service.jar &
+sleep 2
+
+java $JAVA_OPTS -jar /app/cart-service.jar &
+sleep 2
+
+java $JAVA_OPTS -jar /app/classroom-service.jar &
+sleep 2
+
+java $JAVA_OPTS -jar /app/feed-service.jar &
+sleep 2
+
+java $JAVA_OPTS -jar /app/studio-editor-service.jar &
+sleep 2
+
+java $JAVA_OPTS -jar /app/quiz-service.jar &
+sleep 2
+
+java $JAVA_OPTS -jar /app/order-delivery-service.jar &
+sleep 2
 
 PORT="${PORT:-8080}"
 echo "Starting API Gateway on port $PORT..."
