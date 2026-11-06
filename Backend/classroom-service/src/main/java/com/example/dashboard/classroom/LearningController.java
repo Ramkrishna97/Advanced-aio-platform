@@ -1,5 +1,9 @@
 package com.example.dashboard.classroom;
 
+import com.example.dashboard.media.ImageOptimizer;
+import com.example.dashboard.media.MediaLimits;
+import com.example.dashboard.media.StorageQuota;
+
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
@@ -154,8 +158,13 @@ class LearningController {
         Material m=new Material();m.topicId=id;m.teacherId=u.id();m.title=title.trim();m.description=description;m.content=content;
         if(file!=null&&!file.isEmpty()) {
             m.originalName=Path.of(Objects.requireNonNullElse(file.getOriginalFilename(),"resource").replace('\\','/')).getFileName().toString();
-            m.fileName=UUID.randomUUID()+"-"+m.originalName;m.contentType=file.getContentType();
-            try {Files.createDirectories(resourceDir);Files.copy(file.getInputStream(),materialPath(m));}
+            String type=Objects.requireNonNullElse(file.getContentType(),"application/octet-stream");boolean image=type.startsWith("image/");
+            long limit=image?MediaLimits.maxImageUploadBytes():MediaLimits.maxOtherFileBytes();
+            if(file.getSize()>limit)throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE,"Choose a file smaller than "+MediaLimits.megabytes(limit));
+            m.fileName=image?UUID.randomUUID()+".jpg":UUID.randomUUID()+"-"+m.originalName;m.contentType=image?MediaType.IMAGE_JPEG_VALUE:type;
+            try {Files.createDirectories(resourceDir);if(image){byte[] encoded=ImageOptimizer.optimize(file.getInputStream());StorageQuota.reserve(encoded.length);Files.write(materialPath(m),encoded);}else{StorageQuota.reserve(file.getSize());Files.copy(file.getInputStream(),materialPath(m));}}
+            catch(IllegalArgumentException ex){throw new ResponseStatusException(HttpStatus.BAD_REQUEST,ex.getMessage(),ex);}
+            catch(ResponseStatusException ex){throw ex;}
             catch(Exception ex){throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Resource upload failed",ex);}
         }
         try {return view(materials.save(m));}

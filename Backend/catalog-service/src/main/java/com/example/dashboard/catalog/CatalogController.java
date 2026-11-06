@@ -1,5 +1,9 @@
 package com.example.dashboard.catalog;
 
+import com.example.dashboard.media.ImageOptimizer;
+import com.example.dashboard.media.MediaLimits;
+import com.example.dashboard.media.StorageQuota;
+
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
@@ -43,7 +47,7 @@ public class CatalogController {
     private final String authUrl;
 
     CatalogController(ProductRepository products, @Value("${app.jwt.secret}") String secret, @Value("${services.auth:http://localhost:8081}") String authUrl,
-                      @Value("${app.resource-dir:${user.dir}/../resources/products}") String resourceDir) {
+                      @Value("${app.product-resource-dir:${app.resource-dir:${user.dir}/../resources/products}}") String resourceDir) {
         this.products = products;
         this.algorithm = Algorithm.HMAC256(secret);
         this.authUrl = authUrl;
@@ -116,9 +120,15 @@ public class CatalogController {
         Long seller=sellerId(authorization); Product product=products.findById(id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));
         if(!seller.equals(product.sellerId) && !isAdmin(authorization)) throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Only the product's seller can replace its image");
         String type=file.getContentType()==null?"":file.getContentType(); if(!type.startsWith("image/"))throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Upload an image file");
-        String name=UUID.randomUUID()+"-"+Path.of(file.getOriginalFilename()==null?"product-image":file.getOriginalFilename()).getFileName();
-        try {Files.createDirectories(resourceDir);Files.copy(file.getInputStream(),resourceDir.resolve(name));}catch(Exception e){throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Image upload failed",e);}
-        product.imageFile=name; return products.save(product);
+        if(file.getSize()>MediaLimits.maxImageUploadBytes())throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE,"Choose an image smaller than "+MediaLimits.megabytes(MediaLimits.maxImageUploadBytes()));
+        String name=UUID.randomUUID()+".jpg"; String previous=product.imageFile;
+        try {byte[] encoded=ImageOptimizer.optimize(file.getInputStream());StorageQuota.reserve(encoded.length);Files.createDirectories(resourceDir);Files.write(resourceDir.resolve(name),encoded);}
+        catch(IllegalArgumentException e){throw new ResponseStatusException(HttpStatus.BAD_REQUEST,e.getMessage(),e);}
+        catch(ResponseStatusException e){throw e;}
+        catch(Exception e){throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Image upload failed",e);}
+        product.imageFile=name; Product saved=products.save(product);
+        if(previous!=null&&!"default.svg".equals(previous))try{Files.deleteIfExists(resourceDir.resolve(previous));}catch(Exception ignored){}
+        return saved;
     }
 
     @GetMapping("/{id}/image")

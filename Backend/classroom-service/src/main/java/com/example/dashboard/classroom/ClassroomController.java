@@ -1,5 +1,8 @@
 package com.example.dashboard.classroom;
 
+import com.example.dashboard.media.ImageOptimizer;
+import com.example.dashboard.media.MediaLimits;
+import com.example.dashboard.media.StorageQuota;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
@@ -50,9 +53,16 @@ class ClassroomController {
     }
     @PostMapping("/upload") public Material upload(@RequestHeader(value="Authorization",required=false) String auth,@RequestParam("title") String title,@RequestParam("file") MultipartFile file) {
         Principal p=principal(auth); if(!Set.of("TEACHER","ADMIN").contains(p.role())) throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Only teachers and admins can add materials");
-        String original=Objects.requireNonNullElse(file.getOriginalFilename(),"material"); String safe=UUID.randomUUID()+"-"+Path.of(original).getFileName();
-        try { Files.copy(file.getInputStream(),resourceDir.resolve(safe)); } catch(Exception ex) { throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Unable to save material",ex); }
-        Material m=new Material(); m.title=title.trim(); m.fileName=safe; m.contentType=file.getContentType(); m.teacherId=p.id(); return materials.save(m);
+        String type=Objects.requireNonNullElse(file.getContentType(),"application/octet-stream");
+        boolean image=type.startsWith("image/");
+        long limit=image?MediaLimits.maxImageUploadBytes():MediaLimits.maxOtherFileBytes();
+        if(file.getSize()>limit)throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE,"Choose a file smaller than "+MediaLimits.megabytes(limit));
+        String original=Objects.requireNonNullElse(file.getOriginalFilename(),"material"); String safe=image?UUID.randomUUID()+".jpg":UUID.randomUUID()+"-"+Path.of(original).getFileName();
+        try { Files.createDirectories(resourceDir); if(image){byte[] encoded=ImageOptimizer.optimize(file.getInputStream());StorageQuota.reserve(encoded.length);Files.write(resourceDir.resolve(safe),encoded);}else{StorageQuota.reserve(file.getSize());Files.copy(file.getInputStream(),resourceDir.resolve(safe));} }
+        catch(IllegalArgumentException ex){throw new ResponseStatusException(HttpStatus.BAD_REQUEST,ex.getMessage(),ex);}
+        catch(ResponseStatusException ex){throw ex;}
+        catch(Exception ex) { throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Unable to save material",ex); }
+        Material m=new Material(); m.title=title.trim(); m.fileName=safe; m.contentType=image?MediaType.IMAGE_JPEG_VALUE:type; m.teacherId=p.id(); return materials.save(m);
     }
     @GetMapping("/{id}/file") public ResponseEntity<byte[]> file(@RequestHeader(value="Authorization",required=false) String auth,@PathVariable Long id) {
         principal(auth); Material m=materials.findById(id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));

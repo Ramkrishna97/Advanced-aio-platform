@@ -3,6 +3,9 @@ import { Bookmark, BookOpen, ChevronDown, ChevronRight, Heart, ImageOff, MoreHor
 import { recordActivity } from './api';
 import ClassroomFeed from './ClassroomFeed';
 
+const MAX_VIDEO_BYTES = Number(process.env.REACT_APP_MAX_VIDEO_BYTES || 2 * 1000 * 1000 * 1000);
+const MAX_VIDEO_MB = Math.max(1, Math.floor(MAX_VIDEO_BYTES / 1000 / 1000));
+
 const classroomMessage = (status) => status === 400 || status === 422 ? 'Please review the entered information and try again.'
   : status === 401 ? 'Your classroom session has expired. Please sign in again.'
   : status === 403 ? 'Your account does not have permission for that action.'
@@ -186,6 +189,7 @@ export default function Classroom({ token, user, studioInitially = false }) {
     setTopicTitle(''); await refreshModules();
   }); };
   const saveVideo = e => { e.preventDefault(); if (!videoFile) return; run(async () => {
+    if (videoFile.size > MAX_VIDEO_BYTES) throw new Error(`Videos must be ${MAX_VIDEO_MB} MB or smaller.`);
     setUploading(true);
     try {
       const body = new FormData(); body.append('file', videoFile);

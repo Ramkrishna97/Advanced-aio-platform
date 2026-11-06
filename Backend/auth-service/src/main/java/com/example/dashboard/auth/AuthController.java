@@ -1,5 +1,9 @@
 package com.example.dashboard.auth;
 
+import com.example.dashboard.media.ImageOptimizer;
+import com.example.dashboard.media.MediaLimits;
+import com.example.dashboard.media.StorageQuota;
+
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
@@ -246,31 +250,18 @@ public class AuthController {
         AppUser user = current(token);
         if (file.isEmpty() || file.getContentType() == null || !file.getContentType().startsWith("image/"))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Choose an image file");
-        if (file.getSize() > 1_000_000)
-            throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "Choose an image smaller than 1 MB");
+        if (file.getSize() > MediaLimits.maxImageUploadBytes())
+            throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "Choose an image smaller than " + MediaLimits.megabytes(MediaLimits.maxImageUploadBytes()));
         try {
-            BufferedImage source;
-            try (var input = file.getInputStream()) { source = ImageIO.read(input); }
-            if (source == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Choose a valid image file");
-            int edge = Math.min(source.getWidth(), source.getHeight());
-            int x = (source.getWidth() - edge) / 2;
-            int y = (source.getHeight() - edge) / 2;
-            BufferedImage resized = new BufferedImage(256, 256, BufferedImage.TYPE_INT_RGB);
-            Graphics2D graphics = resized.createGraphics();
-            try {
-                graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-                graphics.setColor(java.awt.Color.WHITE);
-                graphics.fillRect(0, 0, 256, 256);
-                graphics.drawImage(source, 0, 0, 256, 256, x, y, x + edge, y + edge, null);
-            } finally { graphics.dispose(); }
-            var encoded = new java.io.ByteArrayOutputStream();
-            ImageIO.write(resized, "jpg", encoded);
+            byte[] encoded;
+            try (var input = file.getInputStream()) { encoded = ImageOptimizer.optimize(input); }
+            StorageQuota.reserve(encoded.length);
             Files.createDirectories(userResourceDir);
             Path staged = Files.createTempFile(userResourceDir, ".profile-", ".tmp");
             String name = UUID.randomUUID() + ".jpg";
             Path destination = userResourceDir.resolve(name);
             try {
-                Files.write(staged, encoded.toByteArray());
+                Files.write(staged, encoded);
                 try { Files.move(staged, destination, StandardCopyOption.ATOMIC_MOVE); }
                 catch (java.nio.file.AtomicMoveNotSupportedException ex) { Files.move(staged, destination); }
             } finally { Files.deleteIfExists(staged); }
@@ -293,6 +284,8 @@ public class AuthController {
             return view(user);
         } catch (ResponseStatusException ex) {
             throw ex;
+        } catch (IllegalArgumentException ex) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, ex.getMessage(), ex);
         } catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Unable to save profile photo", ex);
         }

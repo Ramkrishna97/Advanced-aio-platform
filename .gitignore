@@ -1,2 +1,8 @@
 /resources/classroom/videos/
 /resources/users/
+
+# Local build and dependency output
+**/.gradle/
+**/build/
+**/bin/
+**/node_modules/

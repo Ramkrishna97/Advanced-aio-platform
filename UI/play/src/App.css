@@ -233,9 +233,6 @@ html.dark .video-speed-overlay { background: rgba(19, 33, 28, 0.9); border-color
 .feature:hover .feature-icon, .feature:focus-visible .feature-icon { transform: translateX(2px) rotate(-5deg) scale(.9); box-shadow: 0 12px 23px #1c7b5e38; }
 .feature:hover .feature-copy, .feature:focus-visible .feature-copy { width: 205px; max-width: 205px; opacity: 1; transform: translateX(0); }
 .feature.opens-left .feature-copy { text-align: right; transform: translateX(-14px); }
-.cursor-confetti { position: fixed; z-index: 100; pointer-events: none; inset: 0; overflow: hidden; }
-.cursor-confetti i { position: fixed; width: 5px; height: 5px; border-radius: 50%; opacity: 0; transform: translate(-50%, -50%); animation: cursor-confetti .7s ease-out forwards; box-shadow: 0 0 7px currentColor; }
-@keyframes cursor-confetti { 12% { opacity: .42; } 100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))); } }
 
 /* Classroom outline and chronological feed. */
 .module-creator { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); align-items: end; gap: 12px; }

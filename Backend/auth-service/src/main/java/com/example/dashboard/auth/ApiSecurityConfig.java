@@ -21,10 +21,10 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-@Configuration
+@Configuration("authApiSecurityConfig")
 @EnableWebSecurity
 class ApiSecurityConfig {
-    @Bean SecurityFilterChain apiSecurity(HttpSecurity http, @Value("${app.jwt.secret}") String secret) throws Exception {
+    @Bean SecurityFilterChain authApiSecurity(HttpSecurity http, @Value("${app.jwt.secret}") String secret) throws Exception {
         return http.csrf(csrf -> csrf.disable()).cors(cors -> cors.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(basic -> basic.disable()).formLogin(login -> login.disable()).logout(logout -> logout.disable())

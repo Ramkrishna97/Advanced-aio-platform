@@ -8,12 +8,14 @@ const call = (url, token, options = {}) => api(url, options, token);
 const blankQuestion = () => ({ question: '', options: ['', '', '', ''], correctAnswer: 0 });
 const blankQuiz = () => ({ module: '', subject: '', topic: '', timeMinutes: 15, questions: [blankQuestion()] });
 const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
+const MAX_VIDEO_BYTES = Number(process.env.REACT_APP_MAX_VIDEO_BYTES || 2 * 1000 * 1000 * 1000);
+const MAX_VIDEO_MB = Math.max(1, Math.floor(MAX_VIDEO_BYTES / 1000 / 1000));
 
 async function uploadMedia(file, token, key, onProgress) {
   const stored = JSON.parse(localStorage.getItem(key) || 'null');
   const uploadId = stored?.name === file.name && stored?.size === file.size && stored?.lastModified === file.lastModified ? stored.id : crypto.randomUUID();
   localStorage.setItem(key, JSON.stringify({ id: uploadId, name: file.name, size: file.size, lastModified: file.lastModified }));
-  const chunkSize = 4 * 1024 * 1024;
+  const chunkSize = 1024 * 1024;
   const chunks = Math.ceil(file.size / chunkSize);
   const existing = new Set(await call(`/api/feed/media/uploads/${uploadId}`, token));
   for (let index = 0; index < chunks; index++) {
@@ -80,6 +82,7 @@ export default function ClassroomFeed({ token, user, studioInitially = false, mo
   const publish = async event => {
     event.preventDefault(); if (busy) return; setBusy(true); setError('');
     try {
+      if (draft.type === 'VIDEO' && media?.size > MAX_VIDEO_BYTES) throw new Error(`Videos must be ${MAX_VIDEO_MB} MB or smaller.`);
       setProgress('Saving draft…');
       const saved = draftId ? await call(`/api/studio/${draftId}`, token, { method: 'PUT', body: JSON.stringify(draft) }) : await call('/api/studio', token, { method: 'POST', body: JSON.stringify(draft) });
       setDraftId(saved.id);

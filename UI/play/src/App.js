@@ -42,18 +42,6 @@ function App() {
   const [photoStatus, setPhotoStatus] = useState('');
   const [sellerActivationPending, setSellerActivationPending] = useState(false);
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem(THEME) === 'dark');
-  const [confetti, setConfetti] = useState([]);
-  const confettiTimer = useRef(null);
-
-  useEffect(() => () => clearTimeout(confettiTimer.current), []);
-  const trail = useCallback((event) => {
-    if (event.pointerType === 'touch' || confettiTimer.current) return;
-    const colors = ['#7bd7ae', '#8bbcf8', '#f7b4c9', '#f6d488', '#b9a4f5'];
-    const id = `${Date.now()}-${Math.random()}`;
-    setConfetti(old => [...old.slice(-24), ...Array.from({ length: 4 }, (_, index) => ({ id: `${id}-${index}`, x: event.clientX, y: event.clientY, color: colors[Math.floor(Math.random() * colors.length)], dx: (Math.random() - .5) * 22, dy: (Math.random() - .5) * 22 }))]);
-    confettiTimer.current = setTimeout(() => { confettiTimer.current = null; }, 75);
-    setTimeout(() => setConfetti(old => old.filter(piece => !piece.id.startsWith(id))), 720);
-  }, []);
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', darkMode);
@@ -272,8 +260,7 @@ function App() {
     ...(user?.seller ? [{ id: 'sell', label: 'Seller studio', Icon: Store }] : []),
   ];
 
-  return <div className="app-shell" onPointerMove={trail}>
-    <div className="cursor-confetti" aria-hidden="true">{confetti.map(piece => <i key={piece.id} style={{ left: piece.x, top: piece.y, backgroundColor: piece.color, '--dx': `${piece.dx}px`, '--dy': `${piece.dy}px` }} />)}</div>
+  return <div className="app-shell">
     <header className="topbar shadow-sm bg-white/90 backdrop-blur-xl"><button className="brand" onClick={() => navigate('dashboard')}><span className="brand-mark" aria-hidden="true"><Sparkles size={17} strokeWidth={2.8} /></span> OnePlace</button>
       <nav aria-label="Main navigation">{navItems.map(({ id, label, Icon }) => <button key={id} className={page === id ? 'active' : ''} onClick={() => { navigate(id); if (id === 'orders') loadOrders(token); }}><Icon size={16} aria-hidden="true" /><span>{label}</span></button>)}</nav>
       <div className="header-actions"><button className="theme-toggle" type="button" onClick={() => setDarkMode(value => !value)} aria-label={`Switch to ${darkMode ? 'light' : 'dark'} mode`} title={`Switch to ${darkMode ? 'light' : 'dark'} mode`}>{darkMode ? <Sun size={17} /> : <Moon size={17} />}</button><button className="cart-link" onClick={() => navigate('cart')}><ShoppingCart size={17} aria-hidden="true" /> Cart <span className="badge rounded-pill">{lines.reduce((n, line) => n + line.quantity, 0)}</span></button>{user && <button className="text-button" onClick={() => { navigate('orders'); loadOrders(token); }}><ReceiptText size={16} /> Orders</button>}{user ? <><HeaderAvatar user={user} token={token} photoPreview={photoPreview} onClick={() => setProfileOpen(true)} /><button className="text-button logout-button" onClick={logout}><LogOut size={16} /> <span>Log out</span></button></> : <button className="primary small" onClick={() => navigate(page, 'login')}>Sign in <ArrowRight size={16} /></button>}</div>
