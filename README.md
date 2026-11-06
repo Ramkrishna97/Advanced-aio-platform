@@ -39,5 +39,16 @@ The auth service creates the admin account on startup. Sign in with username `ad
 1. Navigate to `UI/play`.
 2. Run `npm install` and `npm start`.
 
+## Resource-constrained deployment
+
+The Render Docker service uses deployment-only limits from `render.yaml`:
+
+- uploaded images are converted to JPEG and reduced to at most 50 KB;
+- videos and other uploaded classroom files are limited to 2 MB;
+- runtime databases and uploads share a 200 MB application quota and new uploads fail with HTTP 507 when it is full;
+- local files under `resources/` are excluded from the Docker build, apart from `default.svg` and the quiz schema.
+
+These limits are enabled by `MEDIA_RESOURCE_LIMITS=true`. Local runs do not set that variable, retain generous upload limits, and continue using the complete local `resources/` folder. Render's container storage should be treated as disposable; use a persistent disk or object storage if deployed uploads must survive a replacement or redeploy.
+
 ## License
 Project maintained by Ramkrishna97.
