@@ -80,7 +80,10 @@ public class AuthController {
     record LoginRequest(@NotBlank String email, @NotBlank String password) {}
     record ForgotRequest(@Email @NotBlank String email) {}
     record ResetRequest(@NotBlank String token, @Size(min = 8) String password) {}
-    record UserView(Long id, String name, String email, boolean seller, String role, List<String> roles, boolean hasPhoto, Instant photoUpdatedAt) {}
+    record ProfileUpdate(@NotBlank String name, @Email @NotBlank String email,
+                         @Size(max = 30) String phone, @Size(max = 500) String bio,
+                         String currentPassword, String newPassword) {}
+    record UserView(Long id, String name, String email, String phone, String bio, boolean seller, String role, List<String> roles, boolean hasPhoto, Instant photoUpdatedAt) {}
     record ActivityView(Long id, String action, Instant createdAt) {}
     record ActivityRequest(@NotBlank @Size(max = 180) String action) {}
     record AuthResponse(String token, UserView user) {}
@@ -89,7 +92,7 @@ public class AuthController {
         String primary = user.role == null ? "STUDENT" : user.role;
         LinkedHashSet<String> roles = new LinkedHashSet<>();
         roles.add(primary); roles.add("BUYER"); if (user.seller) roles.add("SELLER");
-        return new UserView(user.id, user.name, user.email, user.seller, primary, List.copyOf(roles), user.photoData != null || user.photoFile != null, user.photoUpdatedAt);
+        return new UserView(user.id, user.name, user.email, user.phone, user.bio, user.seller, primary, List.copyOf(roles), user.photoData != null || user.photoFile != null, user.photoUpdatedAt);
     }
 
     private AuthResponse signedIn(AppUser user) {
@@ -199,9 +202,9 @@ public class AuthController {
 
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
-        AppUser user = users.findByEmail("admin".equalsIgnoreCase(request.email().trim()) ? "admin@oneplace.local" : request.email().trim().toLowerCase())
+        AppUser user = users.findByEmail(loginEmail(request.email()))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
-        if (!passwords.matches(request.password(), user.passwordHash)) {
+        if (user.passwordHash == null || !passwords.matches(request.password(), user.passwordHash)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         }
         activityRecorder.record(user.id, "Signed in");
@@ -211,6 +214,37 @@ public class AuthController {
     @GetMapping("/me")
     public UserView me(@RequestHeader(value = "Authorization", required = false) String token) {
         return view(current(token));
+    }
+
+    @PutMapping("/me")
+    @Transactional
+    public AuthResponse updateMe(@RequestHeader(value = "Authorization", required = false) String token,
+                                 @Valid @RequestBody ProfileUpdate input) {
+        AppUser user = current(token);
+        String email = input.email().trim().toLowerCase();
+        if (!email.equals(user.email) && users.existsByEmail(email))
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already registered");
+        boolean changingPassword = input.newPassword() != null && !input.newPassword().isBlank();
+        if (changingPassword) {
+            if (input.newPassword().length() < 8)
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "New password must have at least 8 characters");
+            if (input.currentPassword() == null || user.passwordHash == null || !passwords.matches(input.currentPassword(), user.passwordHash))
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Current password is incorrect");
+            user.passwordHash = passwords.encode(input.newPassword());
+        }
+        user.name = input.name().trim();
+        user.email = email;
+        user.phone = input.phone() == null ? "" : input.phone().trim();
+        user.bio = input.bio() == null ? "" : input.bio().trim();
+        user.sessionVersion = (user.sessionVersion == null ? 0 : user.sessionVersion) + 1;
+        users.saveAndFlush(user);
+        activityRecorder.record(user.id, changingPassword ? "Updated profile and password" : "Updated profile");
+        return signedIn(user);
+    }
+
+    private String loginEmail(String identifier) {
+        String value = identifier.trim().toLowerCase();
+        return Set.of("admin", "admin@gmail.com", "admin@oneplace.local").contains(value) ? "admin@gmail.com" : value;
     }
 
     @PostMapping("/seller")
@@ -344,15 +378,17 @@ public class AuthController {
     @PostMapping("/forgot-password")
     @Transactional
     public Map<String, String> forgot(@Valid @RequestBody ForgotRequest request) {
-        var found = users.findByEmail(request.email().trim().toLowerCase());
+        var found = users.findByEmail(loginEmail(request.email()));
         if (found.isEmpty()) return Map.of("message", "If the account exists, a reset code was created");
-        if ("ADMIN".equals(found.get().role)) return Map.of("message", "If the account exists, a reset code was created");
+        if ("ADMIN".equals(found.get().role)) return Map.of("message", "The admin password cannot be reset from here.");
         byte[] bytes = new byte[32];
         random.nextBytes(bytes);
         String code = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
         AppUser user = found.get();
+        user.passwordHash = null;
         user.resetTokenHash = hash(code);
         user.resetExpiresAt = Instant.now().plus(15, ChronoUnit.MINUTES);
+        user.sessionVersion = (user.sessionVersion == null ? 0 : user.sessionVersion) + 1;
         users.save(user);
         // Local H2 demo: return the code because no mail provider is configured.
         return Map.of("message", "Reset code created (local demo)", "resetToken", code);
