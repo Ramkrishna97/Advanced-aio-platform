@@ -16,6 +16,13 @@
   NETLIFY_SKIP_SUBMODULES = "true"
   GIT_SUBMODULES = "false"
 
+# Keep frontend API calls same-origin and proxy them to Render.
+[[redirects]]
+  from = "/api/*"
+  to = "https://all-ms-backend.onrender.com/api/:splat"
+  status = 200
+  force = true
+
 # Single Page Application (SPA) redirect rule for client-side routing
 [[redirects]]
   from = "/*"
