@@ -42,7 +42,7 @@ import java.util.UUID;
 @RequestMapping("/api/products")
 public class CatalogController {
     private static final int MAX_PRODUCT_IMAGES = 3;
-    private static final int MAX_STORED_PRODUCT_IMAGE_BYTES = 30_000;
+    private static final int MAX_STORED_PRODUCT_IMAGE_BYTES = 20_000;
     private final ProductRepository products;
     private final Algorithm algorithm;
     private final Path resourceDir;
