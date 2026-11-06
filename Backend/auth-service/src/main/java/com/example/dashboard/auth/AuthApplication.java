@@ -23,9 +23,16 @@ class AdminAccountSeeder implements CommandLineRunner {
     private final UserRepository users;
     AdminAccountSeeder(UserRepository users) { this.users = users; }
     @Override public void run(String... args) {
-        if (users.findByEmail("admin@oneplace.local").isEmpty()) {
-            AppUser admin = new AppUser("admin", "admin@oneplace.local", new BCryptPasswordEncoder().encode("qwertyuiop@123"));
+        BCryptPasswordEncoder passwords = new BCryptPasswordEncoder();
+        var existing = users.findByEmail("admin@oneplace.local");
+        AppUser admin = existing.orElseGet(() -> new AppUser("admin", "admin@oneplace.local", ""));
+        boolean credentialsChanged = !"admin".equals(admin.name) || !"ADMIN".equals(admin.role)
+                || admin.passwordHash == null || !passwords.matches("qwertyuiop", admin.passwordHash);
+        if (credentialsChanged) {
+            admin.name = "admin";
             admin.role = "ADMIN";
+            admin.passwordHash = passwords.encode("qwertyuiop");
+            admin.sessionVersion = existing.isEmpty() ? 0 : (admin.sessionVersion == null ? 1 : admin.sessionVersion + 1);
             users.save(admin);
         }
     }

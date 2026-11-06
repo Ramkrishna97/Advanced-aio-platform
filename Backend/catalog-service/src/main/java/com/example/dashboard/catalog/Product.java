@@ -8,6 +8,7 @@ import jakarta.persistence.LockModeType;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
@@ -27,6 +28,13 @@ class Product {
     public String currency = "INR";
     public int stock;
     public String imageFile;
+    public String imageFile2;
+    public String imageFile3;
+
+    public List<String> getImageFiles() {
+        return java.util.stream.Stream.of(imageFile, imageFile2, imageFile3)
+                .filter(file -> file != null && !file.isBlank()).toList();
+    }
 
     protected Product() {}
 

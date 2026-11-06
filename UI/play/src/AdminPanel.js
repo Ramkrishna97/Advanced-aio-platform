@@ -22,7 +22,7 @@ export default function AdminPanel({ token, user, onLogout, onProductsChanged })
   const [account, setAccount] = useState({ name: '', email: '', password: '', role: 'STUDENT' });
   const [post, setPost] = useState(emptyPost);
   const [product, setProduct] = useState(emptyProduct);
-  const [productImage, setProductImage] = useState(null);
+  const [productImages, setProductImages] = useState([]);
   const [error, setError] = useState('');
   const [sectionErrors, setSectionErrors] = useState({});
   const [notice, setNotice] = useState('');
@@ -108,14 +108,14 @@ export default function AdminPanel({ token, user, onLogout, onProductsChanged })
         {post.type !== 'POST' && <label>Resource URL<input value={post.resourceUrl} onChange={e => setPost({ ...post, resourceUrl: e.target.value })} /></label>}
         {post.type === 'QUIZ' && <label>Quiz ID<input value={post.quizId} onChange={e => setPost({ ...post, quizId: e.target.value })} /></label>}
         <button className="primary small" disabled={busy}>Publish post</button></form></section>
-      <section className="panel"><h2>Add product</h2><form className="form" onSubmit={e => { e.preventDefault(); run(async () => { const created = await api('/api/products', { method: 'POST', body: JSON.stringify({ ...product, price: Number(product.price), stock: Number(product.stock), onBehalfOfUserId: product.onBehalfOfUserId ? Number(product.onBehalfOfUserId) : null }) }, token); if (productImage) { const body = new FormData(); body.append('file', productImage); await api(`/api/products/${created.id}/image`, { method: 'POST', body }, token); } setProduct(emptyProduct); setProductImage(null); await onProductsChanged(); }, 'Product added.'); }}>
+      <section className="panel"><h2>Add product</h2><form className="form" onSubmit={e => { e.preventDefault(); run(async () => { const created = await api('/api/products', { method: 'POST', body: JSON.stringify({ ...product, price: Number(product.price), stock: Number(product.stock), onBehalfOfUserId: product.onBehalfOfUserId ? Number(product.onBehalfOfUserId) : null }) }, token); if (productImages.length) { const body = new FormData(); productImages.forEach(image => body.append('files', image)); await api(`/api/products/${created.id}/images`, { method: 'POST', body, timeout: null }, token); } setProduct(emptyProduct); setProductImages([]); await onProductsChanged(); }, 'Product added.'); }}>
         {representative(product.onBehalfOfUserId, value => setProduct({ ...product, onBehalfOfUserId: value }))}
         <label>Name<input required value={product.name} onChange={e => setProduct({ ...product, name: e.target.value })} /></label>
         <label>Description<textarea required value={product.description} onChange={e => setProduct({ ...product, description: e.target.value })} /></label>
         <label>Category<input required value={product.category} onChange={e => setProduct({ ...product, category: e.target.value })} /></label>
         <label>Price (INR)<input required type="number" min="0.01" step="0.01" value={product.price} onChange={e => setProduct({ ...product, price: e.target.value })} /></label>
         <label>Stock<input required type="number" min="1" value={product.stock} onChange={e => setProduct({ ...product, stock: e.target.value })} /></label>
-        <label>Image (optional)<input type="file" accept="image/*" onChange={e => setProductImage(e.target.files?.[0] || null)} /></label>
+        <label>Images (optional, up to 3)<input type="file" accept="image/*" multiple onChange={e => { const selected = Array.from(e.target.files || []); if (selected.length > 3) { setError('Choose no more than 3 product images.'); e.target.value = ''; setProductImages([]); } else setProductImages(selected); }} /></label>
         <button className="primary small" disabled={busy}>Add product</button></form></section>
     </div>
     <div className="admin-grid">

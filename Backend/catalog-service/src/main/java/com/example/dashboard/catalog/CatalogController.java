@@ -41,6 +41,8 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/products")
 public class CatalogController {
+    private static final int MAX_PRODUCT_IMAGES = 3;
+    private static final int MAX_STORED_PRODUCT_IMAGE_BYTES = 30_000;
     private final ProductRepository products;
     private final Algorithm algorithm;
     private final Path resourceDir;
@@ -117,27 +119,73 @@ public class CatalogController {
     @Transactional
     public Product image(@RequestHeader(value="Authorization",required=false) String authorization,
                          @PathVariable Long id,@RequestParam("file") MultipartFile file) {
+        return replaceImages(authorization, id, List.of(file));
+    }
+
+    @PostMapping(value="/{id}/images", consumes="multipart/form-data")
+    @Transactional
+    public Product images(@RequestHeader(value="Authorization",required=false) String authorization,
+                          @PathVariable Long id,@RequestParam("files") List<MultipartFile> files) {
+        return replaceImages(authorization, id, files);
+    }
+
+    private Product replaceImages(String authorization, Long id, List<MultipartFile> files) {
         Long seller=sellerId(authorization); Product product=products.findById(id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));
-        if(!seller.equals(product.sellerId) && !isAdmin(authorization)) throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Only the product's seller can replace its image");
-        String type=file.getContentType()==null?"":file.getContentType(); if(!type.startsWith("image/"))throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Upload an image file");
-        if(file.getSize()>MediaLimits.maxImageUploadBytes())throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE,"Choose an image smaller than "+MediaLimits.megabytes(MediaLimits.maxImageUploadBytes()));
-        String name=UUID.randomUUID()+".jpg"; String previous=product.imageFile;
-        try {byte[] encoded=ImageOptimizer.optimize(file.getInputStream());StorageQuota.reserve(encoded.length);Files.createDirectories(resourceDir);Files.write(resourceDir.resolve(name),encoded);}
-        catch(IllegalArgumentException e){throw new ResponseStatusException(HttpStatus.BAD_REQUEST,e.getMessage(),e);}
-        catch(ResponseStatusException e){throw e;}
-        catch(Exception e){throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Image upload failed",e);}
-        product.imageFile=name; Product saved=products.save(product);
-        if(previous!=null&&!"default.svg".equals(previous))try{Files.deleteIfExists(resourceDir.resolve(previous));}catch(Exception ignored){}
+        if(!seller.equals(product.sellerId) && !isAdmin(authorization)) throw new ResponseStatusException(HttpStatus.FORBIDDEN,"Only the product's seller can replace its images");
+        if(files==null||files.isEmpty()||files.size()>MAX_PRODUCT_IMAGES) throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Choose between 1 and 3 product images");
+
+        List<byte[]> encodedImages=new ArrayList<>();
+        for(MultipartFile file:files){
+            String type=file.getContentType()==null?"":file.getContentType();
+            if(file.isEmpty()||!type.startsWith("image/"))throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Upload image files only");
+            if(file.getSize()>MediaLimits.maxImageUploadBytes())throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE,"Choose images smaller than "+MediaLimits.megabytes(MediaLimits.maxImageUploadBytes()));
+            try{encodedImages.add(ImageOptimizer.optimize(file.getInputStream(),MAX_STORED_PRODUCT_IMAGE_BYTES));}
+            catch(IllegalArgumentException e){throw new ResponseStatusException(HttpStatus.BAD_REQUEST,e.getMessage(),e);}
+            catch(Exception e){throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Image upload failed",e);}
+        }
+
+        long totalBytes=encodedImages.stream().mapToLong(bytes->bytes.length).sum();
+        StorageQuota.reserve(totalBytes);
+        List<String> names=encodedImages.stream().map(bytes->UUID.randomUUID()+".jpg").toList();
+        try{
+            Files.createDirectories(resourceDir);
+            for(int index=0;index<names.size();index++)Files.write(resourceDir.resolve(names.get(index)),encodedImages.get(index));
+        }catch(Exception e){
+            names.forEach(name->{try{Files.deleteIfExists(resourceDir.resolve(name));}catch(Exception ignored){}});
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,"Image upload failed",e);
+        }
+
+        List<String> previous=product.getImageFiles();
+        product.imageFile=names.get(0);
+        product.imageFile2=names.size()>1?names.get(1):null;
+        product.imageFile3=names.size()>2?names.get(2):null;
+        Product saved=products.save(product);
+        previous.forEach(this::deleteImage);
         return saved;
     }
 
     @GetMapping("/{id}/image")
     public ResponseEntity<byte[]> image(@PathVariable Long id) {
+        return productImage(id,0);
+    }
+
+    @GetMapping("/{id}/images/{position}")
+    public ResponseEntity<byte[]> productImage(@PathVariable Long id,@PathVariable int position) {
+        if(position<0||position>=MAX_PRODUCT_IMAGES)throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Product image not found");
         Product product=products.findById(id).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND));
-        Path image=resourceDir.resolve(product.imageFile==null?"default.svg":product.imageFile).normalize();
+        List<String> images=product.getImageFiles();
+        String file=position<images.size()?images.get(position):position==0?"default.svg":null;
+        if(file==null)throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Product image not found");
+        Path image=resourceDir.resolve(file).normalize();
         if(!image.startsWith(resourceDir)||!java.nio.file.Files.exists(image)) image=resourceDir.resolve("default.svg");
         try {return ResponseEntity.ok().contentType(MediaType.parseMediaType(Files.probeContentType(image)==null?"image/svg+xml":Files.probeContentType(image))).body(Files.readAllBytes(image));}
         catch(Exception e){throw new ResponseStatusException(HttpStatus.NOT_FOUND,"Product image not found",e);}
+    }
+
+    private void deleteImage(String file){
+        if(file==null||"default.svg".equals(file))return;
+        Path image=resourceDir.resolve(file).normalize();
+        if(image.startsWith(resourceDir))try{Files.deleteIfExists(image);}catch(Exception ignored){}
     }
 
     @PostMapping
@@ -180,6 +228,7 @@ public class CatalogController {
         if (!isAdmin(authorization)) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin access required");
         Product product = products.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         products.delete(product);
+        product.getImageFiles().forEach(this::deleteImage);
     }
 
     @Bean

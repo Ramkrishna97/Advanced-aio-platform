@@ -7,7 +7,7 @@ const questionTemplate = () => ({ question: '', options: ['', '', '', ''], corre
 
 export default function AdminEditDialog({ kind, item, users, token, onClose, onSaved }) {
   const [form, setForm] = useState(() => ({ ...item, password: '', attribution: 'keep', questions: item.questions?.map(q => ({ ...q, options: [...q.options] })), itemsJson: item.items ? JSON.stringify(item.items, null, 2) : '[]' }));
-  const [image, setImage] = useState(null);
+  const [images, setImages] = useState([]);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const change = key => event => setForm(current => ({ ...current, [key]: event.target.value }));
@@ -50,7 +50,7 @@ export default function AdminEditDialog({ kind, item, users, token, onClose, onS
         default: throw new Error('Unsupported edit');
       }
       await api(path, { method: 'PUT', body: JSON.stringify(body) }, token);
-      if (kind === 'product' && image) { const data = new FormData(); data.append('file', image); await api(`/api/products/${item.id}/image`, { method: 'POST', body: data }, token); }
+      if (kind === 'product' && images.length) { const data = new FormData(); images.forEach(image => data.append('files', image)); await api(`/api/products/${item.id}/images`, { method: 'POST', body: data, timeout: null }, token); }
       await onSaved(kind, item);
     } catch (failure) { setError(failure.message); }
     finally { setBusy(false); }
@@ -68,7 +68,7 @@ export default function AdminEditDialog({ kind, item, users, token, onClose, onS
       <h2>Edit {kind}</h2><form className="form" onSubmit={save}>
         {kind === 'user' && <>{field('Name', 'name', true)}<label>Email<input required type="email" value={form.email} onChange={change('email')} /></label>{select('Role', 'role', roles)}<label><input type="checkbox" checked={!!form.seller} onChange={event => setForm(current => ({ ...current, seller: event.target.checked }))} /> Seller access</label><label>New password (optional)<input type="password" minLength="8" value={form.password} onChange={change('password')} /></label></>}
         {kind === 'post' && <>{field('Title', 'title', true)}{select('Type', 'type', postTypes)}{area('Body', 'body')}{field('Resource URL', 'resourceUrl')}{field('Quiz ID', 'quizId')}{attribution}</>}
-        {kind === 'product' && <>{field('Name', 'name', true)}{area('Description', 'description')}{field('Category', 'category', true)}<label>Price (INR)<input required type="number" min="0.01" step="0.01" value={form.price ?? ''} onChange={change('price')} /></label><label>Stock<input required type="number" min="0" value={form.stock ?? ''} onChange={change('stock')} /></label>{attribution}<label>Replace image (optional)<input type="file" accept="image/*" onChange={event => setImage(event.target.files?.[0] || null)} /></label></>}
+        {kind === 'product' && <>{field('Name', 'name', true)}{area('Description', 'description')}{field('Category', 'category', true)}<label>Price (INR)<input required type="number" min="0.01" step="0.01" value={form.price ?? ''} onChange={change('price')} /></label><label>Stock<input required type="number" min="0" value={form.stock ?? ''} onChange={change('stock')} /></label>{attribution}<label>Replace images (optional, up to 3)<input type="file" accept="image/*" multiple onChange={event => { const selected = Array.from(event.target.files || []); if (selected.length > 3) { setImages([]); setError('Choose no more than 3 product images.'); event.target.value = ''; } else setImages(selected); }} /></label></>}
         {kind === 'quiz' && <>{field('Name', 'name', true)}{field('Module', 'module')}{field('Subject', 'subject')}{field('Topic', 'topic')}<label>Time (minutes)<input required type="number" min="1" value={form.timeMinutes ?? ''} onChange={change('timeMinutes')} /></label>{form.questions?.map((q, index) => <fieldset key={q.id || index}><legend>Question {index + 1}</legend><label>Question<input required value={q.question} onChange={event => updateQuestion(index, { question: event.target.value })} /></label>{q.options.map((option, optionIndex) => <label key={optionIndex}>Option {optionIndex + 1}<input required value={option} onChange={event => updateQuestion(index, { options: q.options.map((value, i) => i === optionIndex ? event.target.value : value) })} /></label>)}<label>Correct option<select value={q.correctAnswer} onChange={event => updateQuestion(index, { correctAnswer: Number(event.target.value) })}>{q.options.map((_, i) => <option key={i} value={i}>Option {i + 1}</option>)}</select></label>{form.questions.length > 1 && <button type="button" className="text-button" onClick={() => setForm(current => ({ ...current, questions: current.questions.filter((_, i) => i !== index) }))}>Remove question</button>}</fieldset>)}<button type="button" className="text-button" onClick={() => setForm(current => ({ ...current, questions: [...current.questions, questionTemplate()] }))}>Add question</button></>}
         {kind === 'material' && <>{field('Title', 'title', true)}{area('Description', 'description')}{area('Content', 'content')}</>}
         {kind === 'draft' && <>{field('Title', 'title', true)}{select('Type', 'type', postTypes)}{area('Body', 'body')}{field('Resource URL', 'resourceUrl')}{field('Quiz ID', 'quizId')}</>}

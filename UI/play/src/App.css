@@ -45,7 +45,13 @@ main { width: 100%; flex: 1; }
 .feature strong { color: #25866b; font-size: 14px; display: inline-flex; align-items: center; gap: 5px; }
 .feature-icon { display: inline-grid; place-items: center; width: 56px; height: 56px; background: linear-gradient(135deg, #e0f5e8, #d0efdf); border-radius: 16px; color: #1e8364; }
 .product-card { overflow: hidden; border: 1px solid #e5eae7; border-radius: 17px; background: white; transition: .2s ease; }
-.product-thumb { height: 190px; display: grid; place-items: center; background: linear-gradient(145deg, #e6f2eb, #f4eee5); color: #4b9d79; font-size: 82px; }
+.product-thumb { width: 100%; height: 190px; display: grid; place-items: center; object-fit: cover; background: linear-gradient(145deg, #e6f2eb, #f4eee5); color: #4b9d79; font-size: 82px; }
+.product-slideshow { position: relative; overflow: hidden; background: #eaf2ed; }
+.product-slide { animation: product-slide-in .45s ease both; }
+.slide-dots { position: absolute; left: 0; right: 0; bottom: 10px; display: flex; justify-content: center; gap: 7px; }
+.slide-dots button { width: 8px; height: 8px; padding: 0; border: 1px solid #fff; border-radius: 50%; background: #ffffff99; box-shadow: 0 1px 5px #10251b55; cursor: pointer; }
+.slide-dots button.active { width: 22px; border-radius: 999px; background: #fff; }
+@keyframes product-slide-in { from { opacity: .35; transform: scale(1.025); } to { opacity: 1; transform: scale(1); } }
 .product-card:nth-child(2n) .product-thumb { background: linear-gradient(145deg, #f4e9df, #e8f0e8); color: #bd8762; }
 .product-card:nth-child(3n) .product-thumb { background: linear-gradient(145deg, #e8eef6, #ecf2e8); color: #7996b6; }
 .product-info { padding: 20px; }

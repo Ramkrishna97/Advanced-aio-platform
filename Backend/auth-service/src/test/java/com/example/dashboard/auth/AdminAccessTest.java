@@ -21,7 +21,7 @@ class AdminAccessTest {
 
     @Test void adminCanCreateAndPermanentlyDeleteUser() throws Exception {
         String login = mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
-                .content("{\"email\":\"admin\",\"password\":\"qwertyuiop@123\"}"))
+                .content("{\"email\":\"admin\",\"password\":\"qwertyuiop\"}"))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         String adminToken = mapper.readTree(login).path("token").asText();
         String account = "{\"name\":\"Temporary\",\"email\":\"temporary@example.com\",\"role\":\"STUDENT\",\"password\":\"examplepass123\"}";
@@ -51,7 +51,7 @@ class AdminAccessTest {
         mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content(adminAccount))
                 .andExpect(status().isBadRequest());
         String login = mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
-                .content("{\"email\":\"admin\",\"password\":\"qwertyuiop@123\"}"))
+                .content("{\"email\":\"admin\",\"password\":\"qwertyuiop\"}"))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         String token = mapper.readTree(login).path("token").asText();
         String created = mvc.perform(post("/api/auth/admin/users").header("Authorization", "Bearer " + token)

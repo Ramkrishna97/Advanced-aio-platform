@@ -24,10 +24,14 @@ public final class ImageOptimizer {
     private ImageOptimizer() {}
 
     public static byte[] optimize(InputStream input) throws IOException {
+        return optimize(input, MediaLimits.maxStoredImageBytes());
+    }
+
+    public static byte[] optimize(InputStream input, int targetBytes) throws IOException {
+        if (targetBytes < 1) throw new IllegalArgumentException("Image storage limit must be positive");
         BufferedImage source = readSafely(input);
 
         BufferedImage image = resize(source, scaleForEdge(source, MediaLimits.maxImageEdge()));
-        int targetBytes = MediaLimits.maxStoredImageBytes();
         while (true) {
             for (float quality = 0.82f; quality >= 0.22f; quality -= 0.10f) {
                 byte[] encoded = jpeg(image, quality);
@@ -106,5 +110,9 @@ public final class ImageOptimizer {
 
     public static byte[] optimize(byte[] input) throws IOException {
         return optimize(new ByteArrayInputStream(input));
+    }
+
+    public static byte[] optimize(byte[] input, int targetBytes) throws IOException {
+        return optimize(new ByteArrayInputStream(input), targetBytes);
     }
 }

@@ -11,7 +11,7 @@ import org.junit.jupiter.api.Test;
 class ImageOptimizerTest {
     @Test
     void producesJpegWithinStorageLimit() throws Exception {
-        System.setProperty("MEDIA_MAX_STORED_IMAGE_BYTES", "50000");
+        System.setProperty("MEDIA_MAX_STORED_IMAGE_BYTES", "30000");
         System.setProperty("MEDIA_MAX_IMAGE_EDGE", "1600");
         try {
             BufferedImage source = new BufferedImage(2200, 1400, BufferedImage.TYPE_INT_RGB);
@@ -22,7 +22,7 @@ class ImageOptimizerTest {
 
             byte[] result = ImageOptimizer.optimize(input.toByteArray());
 
-            assertTrue(result.length <= 50_000);
+            assertTrue(result.length <= 30_000);
             assertEquals(0xff, result[0] & 0xff);
             assertEquals(0xd8, result[1] & 0xff);
         } finally {
