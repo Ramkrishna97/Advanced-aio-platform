@@ -61,7 +61,7 @@ class MsServicesApplicationTests {
         for (int index = 0; index < 3; index++) {
             byte[] stored = mvc.perform(get("/api/products/{id}/images/{position}", productId, index))
                     .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray();
-            assertThat(stored.length).isLessThanOrEqualTo(30_000);
+            assertThat(stored.length).isLessThanOrEqualTo(20_000);
         }
     }
 
@@ -104,6 +104,65 @@ class MsServicesApplicationTests {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"too-large.gif\",\"type\":\"image/gif\",\"size\":50001,\"chunks\":1}"))
                 .andExpect(status().isPayloadTooLarge());
+    }
+
+    @Test
+    void forgotPasswordInvalidatesOldPasswordUntilResetCompletes() throws Exception {
+        String email = "forgot-" + UUID.randomUUID() + "@example.com";
+        mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Reset Student\",\"email\":\"" + email + "\",\"role\":\"STUDENT\",\"password\":\"original123\"}"))
+                .andExpect(status().isOk());
+        String forgot = mvc.perform(post("/api/auth/forgot-password").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"" + email + "\"}"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        String resetCode = mapper.readTree(forgot).path("resetToken").asText();
+        assertThat(resetCode).isNotBlank();
+
+        mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"" + email + "\",\"password\":\"original123\"}"))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/auth/reset-password").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"token\":\"" + resetCode + "\",\"password\":\"replacement123\"}"))
+                .andExpect(status().isOk());
+        mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"" + email + "\",\"password\":\"replacement123\"}"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void adminAliasesLoginAndForgotPasswordExplainsRestriction() throws Exception {
+        mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"admin@gmail.com\",\"password\":\"qwertyuiop\"}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.user.role").value("ADMIN"));
+        mvc.perform(post("/api/auth/forgot-password").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"admin@gmail.com\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("The admin password cannot be reset from here."))
+                .andExpect(jsonPath("$.resetToken").doesNotExist());
+    }
+
+    @Test
+    void userCanUpdateProfileAndPassword() throws Exception {
+        String suffix = UUID.randomUUID().toString();
+        String email = "profile-" + suffix + "@example.com";
+        String registered = mvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"Before\",\"email\":\"" + email + "\",\"role\":\"TEACHER\",\"password\":\"beforepass123\"}"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        String oldToken = mapper.readTree(registered).path("token").asText();
+        String newEmail = "updated-" + suffix + "@example.com";
+        String updated = mvc.perform(put("/api/auth/me").header("Authorization", "Bearer " + oldToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"After\",\"email\":\"" + newEmail + "\",\"phone\":\"555-0123\",\"bio\":\"Teacher profile\",\"currentPassword\":\"beforepass123\",\"newPassword\":\"afterpass123\"}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.user.name").value("After"))
+                .andExpect(jsonPath("$.user.phone").value("555-0123"))
+                .andExpect(jsonPath("$.user.bio").value("Teacher profile"))
+                .andReturn().getResponse().getContentAsString();
+        assertThat(mapper.readTree(updated).path("token").asText()).isNotBlank();
+        mvc.perform(get("/api/auth/me").header("Authorization", "Bearer " + oldToken))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"" + newEmail + "\",\"password\":\"afterpass123\"}"))
+                .andExpect(status().isOk());
     }
 
     private String adminToken() throws Exception {
