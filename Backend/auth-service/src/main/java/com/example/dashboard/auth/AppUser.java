@@ -20,6 +20,9 @@ class AppUser {
     @Column(unique = true, nullable = false)
     String email;
     String passwordHash;
+    String phone;
+    @Column(length = 500)
+    String bio;
     boolean seller;
     String role = "STUDENT";
     Integer sessionVersion;
