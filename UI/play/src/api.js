@@ -22,13 +22,18 @@ export async function api(path, options = {}, token) {
     throw cause;
   }
   if (!response.ok) {
-    const message = response.status === 400 || response.status === 422 ? 'Please review the entered information and try again.'
+    let serverMessage = '';
+    try {
+      const errorBody = await response.json();
+      serverMessage = errorBody.detail || errorBody.message || '';
+    } catch { /* Some upstream failures return an empty or non-JSON response. */ }
+    const message = serverMessage || (response.status === 400 || response.status === 422 ? 'Please review the entered information and try again.'
       : response.status === 401 ? 'Please sign in to continue.'
       : response.status === 403 ? 'You do not have permission to do that.'
       : response.status === 404 ? 'The requested item is no longer available.'
       : response.status === 409 ? 'This item was just reserved by another shopper. Refresh the marketplace and choose another item.'
       : response.status === 410 ? 'Your payment session expired. Please try checkout again.'
-      : 'This service is still starting or temporarily unavailable. Please wait while it reconnects.';
+      : 'This service is still starting or temporarily unavailable. Please wait while it reconnects.');
     const error = new Error(message);
     error.status = response.status;
     throw error;
