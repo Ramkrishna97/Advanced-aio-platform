@@ -1,0 +1,28 @@
+.git
+.github
+.idea
+**/.idea
+**/.gradle
+**/build
+**/bin
+**/node_modules
+UI
+
+# Runtime uploads and local databases must never be baked into a deployment.
+resources/classroom/videos/**
+resources/users/**
+resources/feed/**
+resources/database/**
+resources/data/**
+
+# Product uploads are runtime data; retain only the tiny fallback artwork.
+resources/products/**
+!resources/products/default.svg
+
+*.log
+*.trace.db
+test criteria.txt
+start.bat
+stop.bat
+Dockerfile.backend
+
