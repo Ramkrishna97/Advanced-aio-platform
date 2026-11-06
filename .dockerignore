@@ -8,16 +8,14 @@
 **/node_modules
 UI
 
-# Runtime uploads and local databases must never be baked into a deployment.
-resources/classroom/videos/**
-resources/users/**
-resources/feed/**
-resources/database/**
-resources/data/**
-
-# Product uploads are runtime data; retain only the tiny fallback artwork.
-resources/products/**
+# Never send local runtime data to the Docker builder. Only the two tiny seed
+# assets used by a fresh deployment are explicitly re-included.
+resources/**
+!resources/products/
 !resources/products/default.svg
+!resources/classroom/
+!resources/classroom/quizzes/
+!resources/classroom/quizzes/schema.json
 
 *.log
 *.trace.db
