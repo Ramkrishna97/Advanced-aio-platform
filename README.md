@@ -1,5 +1,7 @@
 # Advanced All-in-One AI & Microservices Platform
 
+Deployed at: [https://aio-app.netlify.app](https://aio-app.netlify.app)
+
 A robust multi-service enterprise platform built with Spring Boot, Spring Cloud, Netflix Eureka, H2, and React.
 
 ## System Architecture
