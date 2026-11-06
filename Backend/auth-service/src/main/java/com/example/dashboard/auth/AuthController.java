@@ -250,11 +250,9 @@ public class AuthController {
         AppUser user = current(token);
         if (file.isEmpty() || file.getContentType() == null || !file.getContentType().startsWith("image/"))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Choose an image file");
-        if (file.getSize() > MediaLimits.maxImageUploadBytes())
-            throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "Choose an image smaller than " + MediaLimits.megabytes(MediaLimits.maxImageUploadBytes()));
         try {
             byte[] encoded;
-            try (var input = file.getInputStream()) { encoded = ImageOptimizer.optimize(input); }
+            try (var input = file.getInputStream()) { encoded = ImageOptimizer.optimizeAnyDimensions(input, MediaLimits.PROFILE_PHOTO_BYTES); }
             StorageQuota.reserve(encoded.length);
             Files.createDirectories(userResourceDir);
             Path staged = Files.createTempFile(userResourceDir, ".profile-", ".tmp");

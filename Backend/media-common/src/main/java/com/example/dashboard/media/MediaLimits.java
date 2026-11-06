@@ -1,6 +1,8 @@
 package com.example.dashboard.media;
 
 public final class MediaLimits {
+    public static final int PROFILE_PHOTO_BYTES = 10_000;
+    public static final int CLASSROOM_GIF_BYTES = 50_000;
     public static final long DEPLOYMENT_IMAGE_UPLOAD_BYTES = 10_000_000L;
     public static final int DEPLOYMENT_STORED_IMAGE_BYTES = 30_000;
     public static final long DEPLOYMENT_VIDEO_BYTES = 2_000_000L;

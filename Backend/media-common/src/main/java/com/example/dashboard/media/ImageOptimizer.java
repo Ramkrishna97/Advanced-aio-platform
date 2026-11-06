@@ -28,8 +28,16 @@ public final class ImageOptimizer {
     }
 
     public static byte[] optimize(InputStream input, int targetBytes) throws IOException {
+        return optimize(input, targetBytes, false);
+    }
+
+    public static byte[] optimizeAnyDimensions(InputStream input, int targetBytes) throws IOException {
+        return optimize(input, targetBytes, true);
+    }
+
+    private static byte[] optimize(InputStream input, int targetBytes, boolean allowLargeDimensions) throws IOException {
         if (targetBytes < 1) throw new IllegalArgumentException("Image storage limit must be positive");
-        BufferedImage source = readSafely(input);
+        BufferedImage source = readSafely(input, allowLargeDimensions);
 
         BufferedImage image = resize(source, scaleForEdge(source, MediaLimits.maxImageEdge()));
         while (true) {
@@ -43,7 +51,7 @@ public final class ImageOptimizer {
         }
     }
 
-    private static BufferedImage readSafely(InputStream input) throws IOException {
+    private static BufferedImage readSafely(InputStream input, boolean allowLargeDimensions) throws IOException {
         try (ImageInputStream imageInput = ImageIO.createImageInputStream(input)) {
             if (imageInput == null) throw new IllegalArgumentException("Choose a valid image file");
             Iterator<ImageReader> readers = ImageIO.getImageReaders(imageInput);
@@ -53,7 +61,7 @@ public final class ImageOptimizer {
                 reader.setInput(imageInput, true, true);
                 int width = reader.getWidth(0);
                 int height = reader.getHeight(0);
-                if ((long) width * height > MAX_PIXELS)
+                if (!allowLargeDimensions && (long) width * height > MAX_PIXELS)
                     throw new IllegalArgumentException("Image dimensions are too large");
                 int maxEdge = MediaLimits.maxImageEdge();
                 int sample = Math.max(1, (int) Math.ceil((double) Math.max(width, height) / maxEdge));

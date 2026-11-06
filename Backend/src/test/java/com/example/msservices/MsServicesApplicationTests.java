@@ -3,6 +3,8 @@ package com.example.msservices;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.util.Base64;
+import java.util.UUID;
 import javax.imageio.ImageIO;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -40,10 +43,7 @@ class MsServicesApplicationTests {
 
     @Test
     void sellerCanUploadThreeOptimizedProductImages() throws Exception {
-        String login = mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"email\":\"admin\",\"password\":\"qwertyuiop\"}"))
-                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        String token = mapper.readTree(login).path("token").asText();
+        String token = adminToken();
         String product = mvc.perform(post("/api/products").header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"Slideshow test\",\"description\":\"Three image product\",\"category\":\"Test\",\"price\":99,\"currency\":\"INR\",\"stock\":1}"))
@@ -63,6 +63,54 @@ class MsServicesApplicationTests {
                     .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray();
             assertThat(stored.length).isLessThanOrEqualTo(30_000);
         }
+    }
+
+    @Test
+    void backendCompressesProfilePhotoBelowTenKilobytes() throws Exception {
+        String token = adminToken();
+        mvc.perform(multipart("/api/auth/me/photo")
+                        .file(new MockMultipartFile("file", "large-profile.png", "image/png", testImage()))
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.hasPhoto").value(true));
+
+        var photo = mvc.perform(get("/api/auth/me/photo").header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk()).andReturn().getResponse();
+        assertThat(photo.getContentType()).isEqualTo(MediaType.IMAGE_JPEG_VALUE);
+        assertThat(photo.getContentAsByteArray().length).isLessThanOrEqualTo(10_000);
+    }
+
+    @Test
+    void classroomGifUploadPreservesGifAndRejectsFilesAboveFiftyKilobytes() throws Exception {
+        String token = adminToken();
+        byte[] gif = Base64.getDecoder().decode("R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==");
+        UUID uploadId = UUID.randomUUID();
+        mvc.perform(put("/api/feed/media/uploads/{id}/0", uploadId)
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_OCTET_STREAM).content(gif))
+                .andExpect(status().isOk());
+        String completed = mvc.perform(post("/api/feed/media/uploads/{id}/complete", uploadId)
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"animation.gif\",\"type\":\"image/gif\",\"size\":" + gif.length + ",\"chunks\":1}"))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.type").value(MediaType.IMAGE_GIF_VALUE))
+                .andReturn().getResponse().getContentAsString();
+        String url = mapper.readTree(completed).path("url").asText();
+        var stored = mvc.perform(get(url)).andExpect(status().isOk()).andReturn().getResponse();
+        assertThat(stored.getContentType()).isEqualTo(MediaType.IMAGE_GIF_VALUE);
+        assertThat(stored.getContentAsByteArray()).containsExactly(gif);
+
+        mvc.perform(post("/api/feed/media/uploads/{id}/complete", UUID.randomUUID())
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"name\":\"too-large.gif\",\"type\":\"image/gif\",\"size\":50001,\"chunks\":1}"))
+                .andExpect(status().isPayloadTooLarge());
+    }
+
+    private String adminToken() throws Exception {
+        String login = mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"email\":\"admin\",\"password\":\"qwertyuiop\"}"))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        return mapper.readTree(login).path("token").asText();
     }
 
     private byte[] testImage() throws Exception {
