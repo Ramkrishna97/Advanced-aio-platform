@@ -17,7 +17,7 @@ import org.springframework.stereotype.Component;
 /** Reads quiz definitions directly from the external resources directory. */
 @Component
 class QuizStore {
-    record Question(String id, String question, List<String> options, int correctAnswer) { }
+    record Question(String id, String question, List<String> options, int correctAnswer, String explanation) { }
     record Quiz(String subject, String topic, Long topicId, List<Question> questions) { }
 
     private final ObjectMapper mapper;
@@ -41,13 +41,13 @@ class QuizStore {
         return questions;
     }
 
-    void addQuestion(LearningModule module, LearningTopic topic, String question, List<String> options, int correctAnswer) {
+    void addQuestion(LearningModule module, LearningTopic topic, String question, List<String> options, int correctAnswer, String explanation) {
         try {
             Files.createDirectories(quizDirectory);
             Path target = quizDirectory.resolve("teacher-topic-" + topic.id + ".json");
             Quiz current = read(target).orElse(new Quiz(module.subject, topic.title, topic.id, new ArrayList<>()));
             List<Question> updated = new ArrayList<>(current.questions());
-            updated.add(new Question(UUID.randomUUID().toString(), question.trim(), List.copyOf(options), correctAnswer));
+            updated.add(new Question(UUID.randomUUID().toString(), question.trim(), List.copyOf(options), correctAnswer, explanation == null ? null : explanation.trim()));
             write(target, new Quiz(module.subject, topic.title, topic.id, updated));
         } catch (IOException exception) {
             throw new IllegalStateException("Quiz could not be saved", exception);
@@ -74,7 +74,7 @@ class QuizStore {
                 int correct = correctAnswer(item, options);
                 String question = text(item, "question");
                 if (question != null && options.size() == 4 && correct >= 0 && correct < 4)
-                    questions.add(new Question(item.path("id").asText(UUID.randomUUID().toString()), question, List.copyOf(options), correct));
+                    questions.add(new Question(item.path("id").asText(UUID.randomUUID().toString()), question, List.copyOf(options), correct, text(item, "explanation")));
             }
             return java.util.Optional.of(new Quiz(subject, topic, topicId, questions));
         } catch (Exception ignored) { return java.util.Optional.empty(); }
