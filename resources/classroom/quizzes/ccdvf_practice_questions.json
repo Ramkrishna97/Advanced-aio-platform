@@ -1,0 +1,1088 @@
+{
+  "schemaVersion": 1,
+  "subject": "Claude Certified Developer - Foundations (CCDV-F)",
+  "topicId": 1,
+  "topic": "Practice Set: Claude API, Tool Use, MCP, RAG, and Agents",
+  "questionnaires": [
+    {
+      "id": "ccdvf-001",
+      "question": "Which parameter is NOT required in a Messages API request?",
+      "options": [
+        "model",
+        "max_tokens",
+        "messages",
+        "system"
+      ],
+      "correctAnswer": 4,
+      "explanation": "The system prompt is optional and is passed as a top-level system parameter. The model, max_tokens, and messages parameters are required."
+    },
+    {
+      "id": "ccdvf-002",
+      "question": "A developer asks Claude a follow-up question in a new API call. Claude does not remember the previous call. What should the developer do?",
+      "options": [
+        "Rely on a server-side session that the API stores automatically",
+        "Resend the relevant prior turns in the messages array of the new request",
+        "Set a persistent flag in the system prompt",
+        "Reuse the same message ID in the next request"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The Messages API is stateless, so the application must include the conversation history it wants Claude to consider in each request. The other options assume server-side memory or state that the API does not provide."
+    },
+    {
+      "id": "ccdvf-003",
+      "question": "A response contains stop_reason set to 'tool_use'. What does this indicate?",
+      "options": [
+        "The conversation has ended normally",
+        "The response was cut off because max_tokens was reached",
+        "Claude has requested a tool to be executed and is waiting for the result",
+        "The tool call failed and must be retried automatically"
+      ],
+      "correctAnswer": 3,
+      "explanation": "A stop_reason of tool_use means Claude paused to request one or more tool calls. 'end_turn' indicates normal completion, 'max_tokens' indicates truncation, and the API does not retry tools automatically."
+    },
+    {
+      "id": "ccdvf-004",
+      "question": "Where should a system prompt be placed when using the Messages API?",
+      "options": [
+        "As a message with role 'system' inside the messages array",
+        "As a top-level system parameter in the request",
+        "Inside the first user message, wrapped in a system tag",
+        "In the HTTP headers of the request"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The system prompt is passed as a top-level system parameter. The messages array accepts user and assistant roles, and system instructions are not sent as a role inside that array."
+    },
+    {
+      "id": "ccdvf-005",
+      "question": "Why are XML-style tags such as <document> and <instructions> commonly used in prompts?",
+      "options": [
+        "They reduce the number of tokens billed",
+        "They enable streaming of partial responses",
+        "They clearly separate different parts of the prompt so Claude can distinguish instructions from data",
+        "They are required for the model to accept long inputs"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Tags help delimit sections such as instructions, source documents, and examples, which reduces ambiguity. They do not change billing, enable streaming, or unlock longer inputs."
+    },
+    {
+      "id": "ccdvf-006",
+      "question": "A developer wants more consistent, repeatable outputs for a classification task. Which adjustment is most appropriate?",
+      "options": [
+        "Increase temperature to 1.0",
+        "Lower the temperature toward 0",
+        "Increase max_tokens to 4096",
+        "Add a stop sequence after every word"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Lower temperature makes sampling more deterministic and typically improves consistency. Higher temperature increases variability, and max_tokens and stop sequences do not directly control randomness."
+    },
+    {
+      "id": "ccdvf-007",
+      "question": "Which technique involves including several input-output examples in the prompt to show Claude the desired format and behavior?",
+      "options": [
+        "Zero-shot prompting",
+        "Few-shot prompting",
+        "Prompt caching",
+        "Chain-of-thought truncation"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Few-shot prompting provides a small number of worked examples. Zero-shot provides none, prompt caching is a cost and latency feature, and chain-of-thought truncation is not a standard technique."
+    },
+    {
+      "id": "ccdvf-008",
+      "question": "A developer needs Claude's response to always follow a specific JSON structure for downstream parsing. Which approach is the most reliable?",
+      "options": [
+        "Ask politely in the user message and hope for the best",
+        "Define a tool with an input_schema matching the structure and read the tool input",
+        "Set temperature to 0 and nothing else",
+        "Append 'output JSON' to every message"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Defining a tool with a JSON Schema input_schema constrains the structure of the arguments Claude produces, and the application reads those arguments. Prompting alone is less reliable, and temperature does not enforce structure."
+    },
+    {
+      "id": "ccdvf-009",
+      "question": "In a tool definition, what is the purpose of the input_schema field?",
+      "options": [
+        "It sets the billing rate for the tool",
+        "It describes the expected parameters using JSON Schema so Claude can produce valid arguments",
+        "It stores the tool's output for future calls",
+        "It configures the timeout for tool execution"
+      ],
+      "correctAnswer": 2,
+      "explanation": "input_schema is a JSON Schema describing the parameters Claude should provide when calling the tool. It has no effect on billing, storage, or timeouts."
+    },
+    {
+      "id": "ccdvf-010",
+      "question": "Claude selects the wrong tool for a user request. Which change is most likely to improve tool selection?",
+      "options": [
+        "Increase max_tokens",
+        "Rewrite the tool description to clearly state what the tool does and when to use it",
+        "Remove all other tools so only one remains",
+        "Lower the top_p value to zero"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Clear, specific tool names and descriptions are the main signal Claude uses to choose among tools. Changing max_tokens or sampling parameters does not address selection logic."
+    },
+    {
+      "id": "ccdvf-011",
+      "question": "Who is responsible for actually executing a tool that Claude requests?",
+      "options": [
+        "Anthropic's servers execute every tool automatically",
+        "Claude executes the tool within its own context window",
+        "The developer's application executes the tool and returns the result",
+        "The tool runs inside the Messages API without any external call"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Claude only requests a tool call. The application must run the function, which may call an external system, and then send the result back. Claude does not run developer code itself."
+    },
+    {
+      "id": "ccdvf-012",
+      "question": "Claude returns two tool_use blocks in a single response. How should the application reply?",
+      "options": [
+        "Send only the first tool result and ignore the second",
+        "Send a separate API request for each tool result with no conversation history",
+        "Return both tool_result blocks in a single user message",
+        "Reply with an assistant message containing both results"
+      ],
+      "correctAnswer": 3,
+      "explanation": "When Claude makes parallel tool calls, all corresponding tool_result blocks belong in a single user message, each referencing its tool_use_id. Ignoring results or changing the role breaks the expected pattern."
+    },
+    {
+      "id": "ccdvf-013",
+      "question": "What must a tool_result block include so Claude can match it to the correct request?",
+      "options": [
+        "The model name",
+        "The tool_use_id from the corresponding tool_use block",
+        "The temperature used in the request",
+        "The API key"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The tool_use_id links each result to the specific tool call Claude made. The other fields are unrelated to matching results to requests."
+    },
+    {
+      "id": "ccdvf-014",
+      "question": "A tool execution fails because the external service is down. How should the developer report this to Claude?",
+      "options": [
+        "Omit the tool_result so Claude times out",
+        "Return a tool_result with is_error set to true and a helpful error message",
+        "Return an empty string and hope Claude infers the failure",
+        "Start a new conversation without any history"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Setting is_error to true with a descriptive message lets Claude understand the failure and respond or retry appropriately. Omitting results or returning empty output hides the problem."
+    },
+    {
+      "id": "ccdvf-015",
+      "question": "A developer wants to guarantee that Claude calls some tool in the next response rather than replying with plain text. Which tool_choice setting achieves this?",
+      "options": [
+        "{\"type\": \"auto\"}",
+        "{\"type\": \"any\"}",
+        "{\"type\": \"none\"}",
+        "{\"type\": \"off\"}"
+      ],
+      "correctAnswer": 2,
+      "explanation": "tool_choice of type any requires Claude to use one of the provided tools. auto lets Claude decide, none prevents tool use, and off is not a valid option."
+    },
+    {
+      "id": "ccdvf-016",
+      "question": "Why should a developer validate tool inputs in their own code even though Claude produces them according to the schema?",
+      "options": [
+        "Claude may produce invalid or unexpected values, so the application should not trust them blindly",
+        "The Messages API cannot pass arguments to tools",
+        "Validation is required for streaming responses",
+        "Tool inputs are always encrypted and must be decrypted"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Model output is not guaranteed to be perfectly valid or safe, so applications should validate inputs before acting, especially for destructive or sensitive operations. The other options are incorrect."
+    },
+    {
+      "id": "ccdvf-017",
+      "question": "A developer receives an HTTP 429 response from the API. What is the most appropriate handling strategy?",
+      "options": [
+        "Immediately retry in a tight loop until it succeeds",
+        "Retry with exponential backoff, respecting the retry-after header if present",
+        "Permanently disable the application",
+        "Change the model to one with a larger context window"
+      ],
+      "correctAnswer": 2,
+      "explanation": "429 indicates rate limiting. Exponential backoff, ideally with jitter and respecting retry-after, avoids overwhelming the service. Tight retry loops worsen the problem."
+    },
+    {
+      "id": "ccdvf-018",
+      "question": "The API returns a temporary overloaded error. Which strategy is most appropriate?",
+      "options": [
+        "Treat it as a permanent failure and never retry",
+        "Retry with exponential backoff and jitter, with a maximum number of attempts",
+        "Send the same request in parallel many times to increase throughput",
+        "Remove the system prompt to reduce load"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Overloaded errors are transient, so bounded retries with exponential backoff and jitter are appropriate. Parallel flooding and permanent failure handling both make the situation worse or unnecessarily fail."
+    },
+    {
+      "id": "ccdvf-019",
+      "question": "A chat interface should show Claude's answer as it is generated. Which API feature should the developer use?",
+      "options": [
+        "Batch processing",
+        "Streaming responses",
+        "Prompt caching",
+        "Token counting"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Streaming delivers the response incrementally as events, which improves perceived latency. Batch processing is asynchronous, prompt caching reduces cost for repeated prefixes, and token counting estimates size."
+    },
+    {
+      "id": "ccdvf-020",
+      "question": "A developer wants to reduce cost and latency when many requests share the same large system prompt and reference document. Which feature is most relevant?",
+      "options": [
+        "Prompt caching using cache_control on the static prefix",
+        "Increasing max_tokens",
+        "Switching temperature to 1.0",
+        "Splitting every request into a separate conversation"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Prompt caching lets repeated prefix content be reused across requests at reduced cost and latency, marked with cache_control. The other options do not reduce repeated processing of the same content."
+    },
+    {
+      "id": "ccdvf-021",
+      "question": "A company must process 100,000 documents overnight and does not need real-time responses. Which API option is best suited?",
+      "options": [
+        "The synchronous Messages API with streaming",
+        "The Message Batches API",
+        "Hosting Claude locally on user devices",
+        "Calling the API from a browser extension"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The Message Batches API is designed for asynchronous, high-volume workloads where results can arrive later, typically at reduced cost. Synchronous streaming is for interactive use."
+    },
+    {
+      "id": "ccdvf-022",
+      "question": "What does the context window of a model represent?",
+      "options": [
+        "The number of tools a request can define",
+        "The maximum combined amount of input and output tokens the model can handle in one request",
+        "The time limit for a single API call",
+        "The number of users allowed on an account"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The context window bounds the total tokens across input and output for a single request. It is not a time limit, tool count, or user count."
+    },
+    {
+      "id": "ccdvf-023",
+      "question": "What is the primary purpose of the Model Context Protocol (MCP)?",
+      "options": [
+        "To train custom Claude models on private data",
+        "To provide a standard way for AI applications to connect to external tools, data sources, and prompts",
+        "To replace the Messages API entirely",
+        "To compress tokens for cheaper billing"
+      ],
+      "correctAnswer": 2,
+      "explanation": "MCP is an open protocol standardizing how AI applications connect to external systems. It does not train models, replace the API, or handle token compression."
+    },
+    {
+      "id": "ccdvf-024",
+      "question": "In MCP, which pair correctly describes the roles of client and server?",
+      "options": [
+        "The client exposes tools; the server consumes them",
+        "The server exposes capabilities such as tools, resources, and prompts; the client connects to and uses them",
+        "Both are identical and interchangeable with no distinction",
+        "The client is always a web browser; the server is always a database"
+      ],
+      "correctAnswer": 2,
+      "explanation": "MCP servers expose capabilities, and MCP clients, typically embedded in an AI application, connect to servers and use them. The other options reverse or misstate the roles."
+    },
+    {
+      "id": "ccdvf-025",
+      "question": "Which three core primitives does MCP servers commonly expose?",
+      "options": [
+        "Tokens, embeddings, and batches",
+        "Tools, resources, and prompts",
+        "Models, keys, and invoices",
+        "Streams, retries, and caches"
+      ],
+      "correctAnswer": 2,
+      "explanation": "MCP servers commonly expose tools for actions, resources for data, and prompts as reusable templates. The other sets are not MCP primitives."
+    },
+    {
+      "id": "ccdvf-026",
+      "question": "A developer is building a local MCP server that runs as a subprocess on the same machine as the client. Which transport is most typical?",
+      "options": [
+        "stdio",
+        "A custom USB driver",
+        "Email over SMTP",
+        "Shared memory with no protocol"
+      ],
+      "correctAnswer": 1,
+      "explanation": "stdio is a common transport for local MCP servers launched as subprocesses. The other options are not standard MCP transports for this purpose."
+    },
+    {
+      "id": "ccdvf-027",
+      "question": "What is the main goal of retrieval-augmented generation (RAG)?",
+      "options": [
+        "To permanently update the model's weights with new documents",
+        "To retrieve relevant external content at query time and include it in the prompt so answers are grounded in that content",
+        "To reduce the context window to one token",
+        "To eliminate the need for any prompts"
+      ],
+      "correctAnswer": 2,
+      "explanation": "RAG retrieves relevant information from an external store at query time and supplies it to the model. It does not change model weights or remove the need for prompts."
+    },
+    {
+      "id": "ccdvf-028",
+      "question": "In a RAG pipeline, what role do embeddings play?",
+      "options": [
+        "They encrypt the prompt before sending it",
+        "They represent text as vectors so semantically similar content can be found by similarity search",
+        "They replace the system prompt",
+        "They determine the billing tier of the account"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Embeddings map text into vector space so that retrieval can match meaning rather than exact keywords. The other options are unrelated to what embeddings do."
+    },
+    {
+      "id": "ccdvf-029",
+      "question": "A RAG system returns chunks that split important sentences in half, reducing answer quality. What is the most direct fix?",
+      "options": [
+        "Increase temperature",
+        "Revisit the chunking strategy, such as using overlap or splitting on semantic boundaries",
+        "Remove the retrieval step entirely",
+        "Reduce the number of retrieved documents to zero"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Chunking choices directly affect retrieval quality. Overlap or boundary-aware splitting helps preserve context. Temperature does not address retrieval, and removing retrieval defeats the purpose of RAG."
+    },
+    {
+      "id": "ccdvf-030",
+      "question": "Which practice most effectively reduces the risk of Claude fabricating answers when using provided documents?",
+      "options": [
+        "Asking Claude to always provide an answer, even if uncertain",
+        "Instructing Claude to answer only from the provided documents and to say when the information is not present",
+        "Raising temperature so Claude explores more options",
+        "Removing all source material from the prompt"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Grounding instructions that restrict answers to supplied sources and permit an 'I don't know' response reduce fabrication. The other options increase risk or remove grounding."
+    },
+    {
+      "id": "ccdvf-031",
+      "question": "Which description best matches the agentic loop pattern?",
+      "options": [
+        "Send one request, receive one response, and stop regardless of content",
+        "Call the model; if stop_reason is tool_use, execute the requested tools, append results, and call the model again until it finishes",
+        "Run all tools in advance before the model is called",
+        "Use a single fixed sequence of tool calls defined in advance with no model involvement"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The agent loop repeatedly calls the model, runs requested tools, returns results, and continues until the model stops for a non-tool reason. The other options describe fixed or single-step flows."
+    },
+    {
+      "id": "ccdvf-032",
+      "question": "A response ends with stop_reason 'max_tokens' and the answer is incomplete. What is the best response?",
+      "options": [
+        "Treat it as a successful complete answer",
+        "Increase max_tokens or ask for a more concise output, then retry",
+        "Change the system prompt to forbid long answers only",
+        "Delete the conversation history"
+      ],
+      "correctAnswer": 2,
+      "explanation": "max_tokens means the output was truncated. Raising the limit or constraining the request addresses the cause. Treating it as complete would deliver partial answers."
+    },
+    {
+      "id": "ccdvf-033",
+      "question": "A developer wants Claude to stop generating when it outputs a specific marker string. Which parameter should be used?",
+      "options": [
+        "stop_sequences",
+        "max_tokens",
+        "system",
+        "top_k only"
+      ],
+      "correctAnswer": 1,
+      "explanation": "stop_sequences defines strings that halt generation when produced. max_tokens limits length rather than matching content, and system provides instructions."
+    },
+    {
+      "id": "ccdvf-034",
+      "question": "Which content block type allows an image to be included in a user message?",
+      "options": [
+        "A text block with the image pasted as raw binary",
+        "An image block with a base64 or URL source",
+        "A tool_result block with no source",
+        "A system block with a file path"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Image content blocks reference the image through a base64 or URL source with a media type. Raw binary in text blocks is not valid, and the other options are unrelated."
+    },
+    {
+      "id": "ccdvf-035",
+      "question": "A developer must keep API keys secure in a server-side application. What is the best practice?",
+      "options": [
+        "Hardcode the key in the source code and commit it to a public repository",
+        "Store the key in an environment variable or secret manager and never expose it to client-side code",
+        "Embed the key in a frontend JavaScript file",
+        "Share the key in chat logs for debugging"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Keys should be stored in environment variables or secret managers and kept server-side. Hardcoding or exposing keys in client code risks leakage."
+    },
+    {
+      "id": "ccdvf-036",
+      "question": "When retrying failed requests, why is jitter added to exponential backoff?",
+      "options": [
+        "To make responses more random",
+        "To spread out retries so many clients do not all retry at the same moment",
+        "To increase the token count",
+        "To bypass rate limits"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Jitter prevents synchronized retry storms across many clients. It does not alter output randomness, token counts, or rate limit rules."
+    },
+    {
+      "id": "ccdvf-037",
+      "question": "A team's application logs full prompts and responses that include customer personal data. What is the most appropriate concern to raise?",
+      "options": [
+        "No concern, since logs are never reviewed",
+        "Sensitive data may be stored unnecessarily, so logging should be minimized, redacted, or governed by policy",
+        "Logging always improves model accuracy automatically",
+        "Prompts cannot contain personal data"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Logging personal data creates privacy and compliance risk, so teams should limit, redact, or protect logged content. The other options are incorrect assumptions."
+    },
+    {
+      "id": "ccdvf-038",
+      "question": "A developer wants to know whether a prompt change improves answer quality across many cases. What is the most sound approach?",
+      "options": [
+        "Test the change on one example and accept it if it looks good",
+        "Build an evaluation set with expected outcomes and measure results before and after the change",
+        "Ask the model whether the change is better and trust its answer",
+        "Change the prompt randomly until it seems better"
+      ],
+      "correctAnswer": 2,
+      "explanation": "A representative evaluation set with measurable criteria gives reliable comparison across cases. Single examples or self-assessment by the model are not sufficient evidence."
+    },
+    {
+      "id": "ccdvf-039",
+      "question": "Which model choice is generally best when latency and cost matter more than maximum reasoning depth for a simple classification task?",
+      "options": [
+        "The largest and most capable model always",
+        "A smaller, faster model in the family that meets the accuracy requirement",
+        "A model chosen randomly",
+        "No model at all, using only regular expressions in every case"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Smaller models typically offer lower latency and cost, and are often sufficient for simpler tasks. Choosing the largest model by default ignores tradeoffs, and random selection is not a sound strategy."
+    },
+    {
+      "id": "ccdvf-040",
+      "question": "Which statement about token costs is generally correct?",
+      "options": [
+        "Input and output tokens are priced identically and always free",
+        "Output tokens are typically priced higher than input tokens",
+        "Only system prompt tokens are billed",
+        "Tokens are billed only when tools are used"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Output tokens are generally priced higher than input tokens, and billing applies to both input and output. Check current pricing for exact rates."
+    },
+    {
+      "id": "ccdvf-041",
+      "question": "The Python SDK is initialized without passing an API key explicitly. Where does it typically look for the key?",
+      "options": [
+        "In the model parameter",
+        "In the ANTHROPIC_API_KEY environment variable",
+        "In the messages array",
+        "In the tool_choice field"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The official SDKs read the ANTHROPIC_API_KEY environment variable by default when no key is passed. The other fields are unrelated to authentication."
+    },
+    {
+      "id": "ccdvf-042",
+      "question": "A team is designing an automation. The task is a fixed sequence of steps that never varies. Which design is generally preferable?",
+      "options": [
+        "A fully autonomous agent with unlimited tools",
+        "A deterministic workflow with predefined code paths, using the model only where needed",
+        "Random tool calls each run",
+        "Manual execution by a human for every step"
+      ],
+      "correctAnswer": 2,
+      "explanation": "When steps are predictable, a deterministic workflow is simpler, cheaper, and more reliable. Agents add flexibility at the cost of predictability and are better suited to open-ended tasks."
+    },
+    {
+      "id": "ccdvf-043",
+      "question": "An agent is about to perform an irreversible action, such as deleting customer records. What is the most appropriate safeguard?",
+      "options": [
+        "Let the agent proceed automatically to save time",
+        "Require explicit human confirmation before executing the action",
+        "Remove logging so the action is faster",
+        "Increase temperature to be more decisive"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Human-in-the-loop approval for destructive actions limits the damage from errors or misuse. Automatic execution, removing logs, or raising temperature all increase risk."
+    },
+    {
+      "id": "ccdvf-044",
+      "question": "Which file is used by Claude Code to store project-specific instructions and conventions that persist across sessions?",
+      "options": [
+        "package.lock",
+        "CLAUDE.md",
+        "tool_choice.json",
+        "stop.txt"
+      ],
+      "correctAnswer": 2,
+      "explanation": "CLAUDE.md is the standard memory file for project instructions in Claude Code. The other filenames are not used for this purpose."
+    },
+    {
+      "id": "ccdvf-045",
+      "question": "A developer wants Claude to answer with citations to the source passages it used. Which approach is most aligned with grounding practices?",
+      "options": [
+        "Ask Claude to invent plausible references",
+        "Provide numbered source passages and instruct Claude to reference the passage numbers used in each claim",
+        "Avoid providing any sources",
+        "Use the highest temperature setting"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Providing identifiable sources and asking for references to them supports verifiable answers. Inventing references or omitting sources defeats the goal."
+    },
+    {
+      "id": "ccdvf-046",
+      "question": "In a multi-turn conversation, the total input grows with each turn. Which practice helps manage this?",
+      "options": [
+        "Sending the entire conversation history forever without trimming",
+        "Summarizing or trimming older turns while preserving the information needed for the task",
+        "Switching to a new API key for every turn",
+        "Removing the system prompt in all turns"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Summarizing or trimming older context keeps requests within the context window and controls cost, while preserving what matters. Unlimited growth or removing instructions causes problems."
+    },
+    {
+      "id": "ccdvf-047",
+      "question": "A tool returns a very large result that would consume much of the context window. What is the best practice?",
+      "options": [
+        "Return the full result regardless of size",
+        "Return only the relevant portion or a summary, with a way to request more detail",
+        "Discard the result without informing Claude",
+        "Increase max_tokens to unlimited"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Trimming or summarizing tool output keeps context focused and efficient, and allowing follow-up requests preserves access to details. Returning everything wastes context, and discarding silently hides information."
+    },
+    {
+      "id": "ccdvf-048",
+      "question": "Which statement best describes how an MCP client discovers what a server offers?",
+      "options": [
+        "The client guesses tool names from the server's IP address",
+        "The client requests the server's available tools, resources, and prompts through the protocol",
+        "The client reads the server's private database directly",
+        "The client has no way to discover capabilities"
+      ],
+      "correctAnswer": 2,
+      "explanation": "MCP defines protocol messages that let clients list the tools, resources, and prompts a server provides. Guessing or direct database access are not the mechanism."
+    },
+    {
+      "id": "ccdvf-049",
+      "question": "A developer is choosing between a prompt-only approach and a tool-based approach to extract structured data from documents. Which factor most strongly favors the tool-based approach?",
+      "options": [
+        "The output must reliably match a schema that downstream code depends on",
+        "The developer wants the shortest possible prompt",
+        "The model should avoid using any structure at all",
+        "The developer wants to disable the system prompt"
+      ],
+      "correctAnswer": 1,
+      "explanation": "When downstream code depends on a specific structure, defining a tool with a schema gives stronger structural guarantees than prompting alone. Prompt length and removing structure are not the deciding factors."
+    },
+    {
+      "id": "ccdvf-050",
+      "question": "A team wants to deploy a new prompt version to production safely. Which rollout approach is most appropriate?",
+      "options": [
+        "Replace the production prompt immediately for all users without testing",
+        "Test against an evaluation set, roll out gradually or to a subset, and monitor results with a rollback plan",
+        "Deploy the prompt only on developers' laptops",
+        "Avoid monitoring to reduce overhead"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Evaluation, staged rollout, monitoring, and rollback reduce risk when changing prompts in production. Immediate replacement without testing and skipping monitoring both increase risk."
+    },
+    {
+      "id": "ccdvf-051",
+      "question": "Which Messages API field tells you why generation ended?",
+      "options": [
+        "stop_reason",
+        "usage",
+        "model",
+        "id"
+      ],
+      "correctAnswer": 1,
+      "explanation": "stop_reason explains why generation stopped, such as end_turn or tool_use. usage reports token counts, model names the model, and id identifies the message."
+    },
+    {
+      "id": "ccdvf-052",
+      "question": "A developer wants a response to always begin with a JSON opening brace. Which technique fits best?",
+      "options": [
+        "Set max_tokens to 1",
+        "Prefill the assistant turn with an opening brace",
+        "Use a higher temperature",
+        "Add a stop sequence of JSON"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Prefilling the start of the assistant turn steers how the response begins. The other options do not control the first character of the output."
+    },
+    {
+      "id": "ccdvf-053",
+      "question": "Which tool_choice value forces Claude to call some tool on its next turn?",
+      "options": [
+        "none",
+        "auto",
+        "any",
+        "off"
+      ],
+      "correctAnswer": 3,
+      "explanation": "any requires one of the provided tools to be used. auto lets Claude decide, none prevents tool use, and off is not a valid option."
+    },
+    {
+      "id": "ccdvf-054",
+      "question": "A tool returns a failure that Claude should know about. How should the application report it?",
+      "options": [
+        "Omit the tool_result",
+        "Return an empty string",
+        "Restart the conversation",
+        "Return a tool_result with is_error set to true and a clear message"
+      ],
+      "correctAnswer": 4,
+      "explanation": "is_error marks the result as a failure so Claude can respond appropriately. Omitting the result or returning empty content hides the failure."
+    },
+    {
+      "id": "ccdvf-055",
+      "question": "Which HTTP status code most typically indicates a rate limit?",
+      "options": [
+        "429",
+        "400",
+        "401",
+        "404"
+      ],
+      "correctAnswer": 1,
+      "explanation": "429 indicates too many requests. 400 is an invalid request, 401 is an authentication failure, and 404 means the resource was not found."
+    },
+    {
+      "id": "ccdvf-056",
+      "question": "A request failed with a transient overload error. What is the best retry strategy?",
+      "options": [
+        "Retry immediately in a loop",
+        "Exponential backoff with jitter and a bounded number of attempts",
+        "Never retry",
+        "Send many parallel copies"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Bounded retries with exponential backoff and jitter handle transient errors without overwhelming the service."
+    },
+    {
+      "id": "ccdvf-057",
+      "question": "Which workload suits the Message Batches API best?",
+      "options": [
+        "A live chat reply",
+        "Keystroke autocomplete",
+        "Overnight processing of tens of thousands of documents",
+        "A voice conversation"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Batches are designed for asynchronous bulk work where results do not need to be immediate."
+    },
+    {
+      "id": "ccdvf-058",
+      "question": "What does prompt caching require to work effectively?",
+      "options": [
+        "A constantly changing prefix",
+        "Random system prompts",
+        "Disabling streaming",
+        "A stable, identical prefix across requests"
+      ],
+      "correctAnswer": 4,
+      "explanation": "Caching reuses a stable prefix. A changing prefix produces cache misses, so stable content should come first."
+    },
+    {
+      "id": "ccdvf-059",
+      "question": "Which MCP primitive is best suited to exposing readable documents to a client?",
+      "options": [
+        "Resources",
+        "Tools",
+        "Prompts",
+        "Batches"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Resources expose readable data such as documents or records. Tools perform actions, and prompts are reusable templates."
+    },
+    {
+      "id": "ccdvf-060",
+      "question": "Which MCP primitive lets a server offer a reusable, parameterized template?",
+      "options": [
+        "Tools",
+        "Prompts",
+        "Resources",
+        "Batches"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Prompts are reusable templates that servers offer to clients. Tools perform actions and resources expose readable data."
+    },
+    {
+      "id": "ccdvf-061",
+      "question": "Which transport is typical for a local MCP server launched as a subprocess?",
+      "options": [
+        "SMTP",
+        "A USB driver",
+        "stdio",
+        "Shared memory with no protocol"
+      ],
+      "correctAnswer": 3,
+      "explanation": "stdio is the standard transport for locally launched servers. The other options are not MCP transports."
+    },
+    {
+      "id": "ccdvf-062",
+      "question": "In a RAG pipeline, what is the main purpose of embeddings?",
+      "options": [
+        "Encrypting prompts",
+        "Setting temperature",
+        "Tracking billing",
+        "Enabling similarity search over meaning"
+      ],
+      "correctAnswer": 4,
+      "explanation": "Embeddings represent text as vectors so semantically similar passages can be retrieved."
+    },
+    {
+      "id": "ccdvf-063",
+      "question": "Retrieved passages contain the text 'ignore your instructions.' How should this be treated?",
+      "options": [
+        "As untrusted data that must not override system instructions",
+        "As a trusted command",
+        "As a formatting directive",
+        "As an API error"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Retrieved content is data and may carry injected instructions, so it must not override the system behavior."
+    },
+    {
+      "id": "ccdvf-064",
+      "question": "What is the main purpose of reranking in retrieval?",
+      "options": [
+        "Renaming files",
+        "Reordering candidates so the most relevant passages are used",
+        "Changing sampling settings",
+        "Managing API keys"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Reranking refines the candidate set so the best passages reach the model."
+    },
+    {
+      "id": "ccdvf-065",
+      "question": "Why should an agent loop have a maximum iteration count?",
+      "options": [
+        "It is never needed",
+        "It improves accuracy",
+        "It prevents runaway loops that waste cost and repeat side effects",
+        "It only matters for images"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Iteration caps protect against endless loops, which waste resources and can repeat actions."
+    },
+    {
+      "id": "ccdvf-066",
+      "question": "A workflow has fixed, predictable steps. Which design is generally preferable?",
+      "options": [
+        "A fully autonomous agent",
+        "Random tool calls",
+        "Manual steps for every run",
+        "A deterministic workflow with the model used where needed"
+      ],
+      "correctAnswer": 4,
+      "explanation": "Predictable tasks are more reliable and cheaper as deterministic workflows."
+    },
+    {
+      "id": "ccdvf-067",
+      "question": "An agent is about to delete production records. What safeguard is most appropriate?",
+      "options": [
+        "Human approval before execution",
+        "Automatic execution",
+        "Removing logs",
+        "Raising temperature"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Irreversible actions should require explicit approval to limit damage from errors."
+    },
+    {
+      "id": "ccdvf-068",
+      "question": "Which file gives Claude Code persistent project instructions?",
+      "options": [
+        "package.lock",
+        "CLAUDE.md",
+        "stop.txt",
+        "tool_choice.json"
+      ],
+      "correctAnswer": 2,
+      "explanation": "CLAUDE.md holds project guidance that Claude Code reads across sessions."
+    },
+    {
+      "id": "ccdvf-069",
+      "question": "Where should a secret API key be stored for a project that Claude Code works on?",
+      "options": [
+        "In CLAUDE.md",
+        "In a committed source file",
+        "In an environment variable or secret manager",
+        "In the commit message"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Secrets belong in environment variables or secret managers, not in committed files or instructions."
+    },
+    {
+      "id": "ccdvf-070",
+      "question": "Why should a team review tools and MCP servers enabled in a shared project?",
+      "options": [
+        "Tools do not affect the project",
+        "Only designers use tools",
+        "It only affects billing",
+        "Enabled tools determine what actions and data access agents have"
+      ],
+      "correctAnswer": 4,
+      "explanation": "Tools define available actions and data access, so shared configuration should be deliberate."
+    },
+    {
+      "id": "ccdvf-071",
+      "question": "A deployed server application needs an API key. What is the safest storage approach?",
+      "options": [
+        "Store it in a secret manager with restricted access",
+        "Hardcode it in source",
+        "Put it in a public README",
+        "Log it on every request"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Secret managers and environment variables keep credentials out of source control and logs."
+    },
+    {
+      "id": "ccdvf-072",
+      "question": "A key was accidentally committed to a public repository. What should happen first?",
+      "options": [
+        "Delete the commit and do nothing else",
+        "Revoke or rotate the key and review usage",
+        "Wait a week",
+        "Rename the repository"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Exposed keys should be treated as compromised. Revoking them and reviewing activity limits damage."
+    },
+    {
+      "id": "ccdvf-073",
+      "question": "Why should API calls never be made from client-side code with an embedded key?",
+      "options": [
+        "Browsers cannot send requests",
+        "The key expires in browsers",
+        "Users can extract the key from the client and misuse it",
+        "Only desktop apps are allowed"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Client-side code is visible to users, so secrets there are exposed. Requests should go through a server."
+    },
+    {
+      "id": "ccdvf-074",
+      "question": "What is prompt injection?",
+      "options": [
+        "A training technique",
+        "A prompt compression method",
+        "A billing error",
+        "Malicious or unintended instructions embedded in inputs that try to override intended behavior"
+      ],
+      "correctAnswer": 4,
+      "explanation": "Prompt injection exploits the way models process instructions and data together."
+    },
+    {
+      "id": "ccdvf-075",
+      "question": "Why is prompt injection more serious for agents than for chatbots?",
+      "options": [
+        "Agents can act through tools, so a successful injection can cause real effects",
+        "Agents do not use models",
+        "Chatbots cannot read text",
+        "Agents never receive external content"
+      ],
+      "correctAnswer": 1,
+      "explanation": "The consequences grow when the model can take actions, so permissions and approvals matter more."
+    },
+    {
+      "id": "ccdvf-076",
+      "question": "Model output is used to build a database query without validation. What risk does this create?",
+      "options": [
+        "Better performance",
+        "Injection risk from trusting model output",
+        "Correct structured output",
+        "A billing issue"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Model output is untrusted input to downstream systems. Parameterized queries and validation prevent injection."
+    },
+    {
+      "id": "ccdvf-077",
+      "question": "Why is data minimization important in an AI application?",
+      "options": [
+        "Collect everything for future use",
+        "Store all data publicly",
+        "Send and retain only the personal data needed for the task",
+        "Remove all user data"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Minimization reduces exposure and compliance risk by limiting data to what is necessary."
+    },
+    {
+      "id": "ccdvf-078",
+      "question": "What is defense in depth?",
+      "options": [
+        "One very strong control only",
+        "Making code files deeper",
+        "Storing data in deeper folders",
+        "Layering several safeguards so one failure is caught by another"
+      ],
+      "correctAnswer": 4,
+      "explanation": "Layered controls reduce the chance that a single failure leads to harm."
+    },
+    {
+      "id": "ccdvf-079",
+      "question": "What is the main purpose of an evaluation set?",
+      "options": [
+        "To measure quality and safety on representative cases with clear criteria",
+        "To prove the model is perfect",
+        "To replace software testing",
+        "To reduce users"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Evaluation sets provide objective evidence on realistic inputs, supporting fair comparison of changes."
+    },
+    {
+      "id": "ccdvf-080",
+      "question": "A prompt change looks better on three hand-picked examples. What is the main weakness?",
+      "options": [
+        "No weakness",
+        "Three examples may not represent the full range of inputs",
+        "Examples always prove improvement",
+        "Examples only apply to images"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Small hand-picked samples can mislead. A representative set with measured results gives more reliable evidence."
+    },
+    {
+      "id": "ccdvf-081",
+      "question": "Why should evaluation sets be kept separate from prompt development examples?",
+      "options": [
+        "Separation is unnecessary",
+        "Development examples are always wrong",
+        "Reusing them inflates results because the prompt may be tuned to those cases",
+        "Evaluation sets must be very large"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Held-out data estimates performance on unseen inputs. Reusing development examples overstates results."
+    },
+    {
+      "id": "ccdvf-082",
+      "question": "Average quality is high, but a small group of users gets poor answers. What should the team do?",
+      "options": [
+        "Ignore the group",
+        "Remove the group from testing",
+        "Raise temperature for everyone",
+        "Analyze performance by segment to find hidden failures"
+      ],
+      "correctAnswer": 4,
+      "explanation": "Averages can hide failures affecting specific groups or input types, so segmented analysis is needed."
+    },
+    {
+      "id": "ccdvf-083",
+      "question": "A team wants to compare two prompt versions fairly. What is most important?",
+      "options": [
+        "The same representative test set and criteria for both",
+        "Different test sets for each version",
+        "Testing only the preferred version",
+        "Changing the model between tests"
+      ],
+      "correctAnswer": 1,
+      "explanation": "A fair comparison holds the test set and criteria constant."
+    },
+    {
+      "id": "ccdvf-084",
+      "question": "What does a regression test check in AI evaluation?",
+      "options": [
+        "Whether everything improved at once",
+        "Whether previously working behavior still works after a change",
+        "Whether the model name changed",
+        "Whether billing is correct"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Regression tests catch unintended breakage from prompt, model, or retrieval changes."
+    },
+    {
+      "id": "ccdvf-085",
+      "question": "Why should AI features be rolled out in stages?",
+      "options": [
+        "To delay indefinitely",
+        "To avoid collecting feedback",
+        "To limit exposure while monitoring quality and safety",
+        "To increase errors"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Staged rollouts contain problems and provide real-world evidence before full release."
+    },
+    {
+      "id": "ccdvf-086",
+      "question": "A safety filter is evaluated. Which pair of metrics is most useful?",
+      "options": [
+        "Total flags only",
+        "Flagged message length only",
+        "Interface color only",
+        "Rate of harmful content missed and rate of benign content wrongly flagged"
+      ],
+      "correctAnswer": 4,
+      "explanation": "Filters can fail in both directions. Measuring both reveals the trade-off."
+    },
+    {
+      "id": "ccdvf-087",
+      "question": "Why is human review still valuable alongside automated metrics?",
+      "options": [
+        "Humans capture nuance and harm that metrics may miss, and can calibrate automated graders",
+        "Humans are always wrong",
+        "Human evaluation is never needed",
+        "Humans cannot read outputs"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Automated metrics are efficient but imperfect, and human judgment catches subtleties."
+    },
+    {
+      "id": "ccdvf-088",
+      "question": "Which set of practices best describes a token-efficient design?",
+      "options": [
+        "Largest model everywhere, no measurement",
+        "Right-size models, cache stable content, trim inputs and outputs, and monitor spend by feature",
+        "Send entire datasets on every request",
+        "Disable logging to save money"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Matching models to tasks, caching stable content, controlling token volume, and monitoring spend balances cost and quality."
+    },
+    {
+      "id": "ccdvf-089",
+      "question": "What does a kill switch provide for an autonomous agent?",
+      "options": [
+        "Faster responses",
+        "Deletion of training data",
+        "An immediate way for operators to stop activity when behavior is unsafe",
+        "A billing discount"
+      ],
+      "correctAnswer": 3,
+      "explanation": "A kill switch is an emergency stop that operators can use when an agent behaves unexpectedly."
+    },
+    {
+      "id": "ccdvf-090",
+      "question": "What is a trajectory in agent evaluation?",
+      "options": [
+        "The user's mouse path",
+        "The model's weights",
+        "The billing timeline",
+        "The sequence of decisions, tool calls, and observations an agent took"
+      ],
+      "correctAnswer": 4,
+      "explanation": "A trajectory records how the agent reached its result, which helps diagnose inefficient or unsafe behavior."
+    }
+  ]
+}
