@@ -1,0 +1,728 @@
+{
+  "schemaVersion": 1,
+  "subject": "Claude Certified Developer - Foundations (CCDV-F)",
+  "topicId": 5,
+  "topic": "Error Handling, Rate Limits, and Reliability",
+  "questionnaires": [
+    {
+      "id": "ccdvf-t5-001",
+      "question": "An API call returns HTTP 400. What does this most typically indicate?",
+      "options": [
+        "A temporary server outage",
+        "An invalid request, such as a malformed body or missing required field",
+        "A rate limit was reached",
+        "The API key is valid but lacks billing"
+      ],
+      "correctAnswer": 2,
+      "explanation": "400 means the request itself is invalid. Retrying the identical request will not fix it, so the request must be corrected first."
+    },
+    {
+      "id": "ccdvf-t5-002",
+      "question": "An API call returns HTTP 401. What is the most likely cause?",
+      "options": [
+        "The request body is too large",
+        "The API key is missing or invalid",
+        "The server is overloaded",
+        "The requested model is deprecated"
+      ],
+      "correctAnswer": 2,
+      "explanation": "401 indicates an authentication failure, usually a missing or invalid API key. Retrying without fixing credentials will keep failing."
+    },
+    {
+      "id": "ccdvf-t5-003",
+      "question": "An API call returns HTTP 403. What does this typically indicate?",
+      "options": [
+        "The key is valid but does not have permission for the requested action or resource",
+        "The request is malformed JSON",
+        "The rate limit was exceeded",
+        "The response is ready to stream"
+      ],
+      "correctAnswer": 1,
+      "explanation": "403 means the caller is recognized but not permitted to perform the action. Unlike 401, the credentials are not the issue."
+    },
+    {
+      "id": "ccdvf-t5-004",
+      "question": "An API call returns HTTP 404. What is the best first step?",
+      "options": [
+        "Retry the same request with exponential backoff",
+        "Check that the endpoint path and referenced resource, such as a model name, are correct",
+        "Increase max_tokens",
+        "Switch to batch processing"
+      ],
+      "correctAnswer": 2,
+      "explanation": "404 usually means the endpoint or resource does not exist, often due to a typo or retired model name. Retrying unchanged will not help."
+    },
+    {
+      "id": "ccdvf-t5-005",
+      "question": "An API call returns HTTP 429. What does this status code indicate?",
+      "options": [
+        "The request was too large for the context window",
+        "The caller has exceeded a rate limit",
+        "The API key has expired permanently",
+        "The model produced invalid JSON"
+      ],
+      "correctAnswer": 2,
+      "explanation": "429 means too many requests in a given period. It is typically temporary and should be handled with backoff."
+    },
+    {
+      "id": "ccdvf-t5-006",
+      "question": "A 429 response includes a retry-after header. How should the application respond?",
+      "options": [
+        "Ignore the header and retry immediately",
+        "Wait at least the indicated time before retrying",
+        "Permanently disable the integration",
+        "Send the request in parallel with more threads"
+      ],
+      "correctAnswer": 2,
+      "explanation": "retry-after tells the client how long to wait. Respecting it avoids repeated rejections and reduces load."
+    },
+    {
+      "id": "ccdvf-t5-007",
+      "question": "An API call returns HTTP 500. How should it generally be treated?",
+      "options": [
+        "As a permanent client error that should never be retried",
+        "As a possibly transient server-side error that may be retried with backoff",
+        "As proof the request was invalid",
+        "As a sign the API key must be rotated"
+      ],
+      "correctAnswer": 2,
+      "explanation": "500 indicates an internal server error, which may be transient. Bounded retries with backoff are appropriate, and the cause is on the server side."
+    },
+    {
+      "id": "ccdvf-t5-008",
+      "question": "The API returns an overloaded error indicating that the service is temporarily at capacity. What is the best strategy?",
+      "options": [
+        "Retry immediately in a tight loop",
+        "Retry with exponential backoff and jitter, up to a bounded number of attempts",
+        "Send many parallel copies of the request",
+        "Treat it as an invalid request"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Overload is transient, so bounded retries with backoff and jitter reduce load and improve success. Tight loops and parallel flooding make the problem worse."
+    },
+    {
+      "id": "ccdvf-t5-009",
+      "question": "Which set of errors is generally NOT worth retrying without first changing the request?",
+      "options": [
+        "429 and 503",
+        "400 and 404",
+        "500 and 529",
+        "Connection timeouts"
+      ],
+      "correctAnswer": 2,
+      "explanation": "400 and 404 indicate problems with the request or resource, which retrying will not fix. Rate limits, server errors, and timeouts are often transient."
+    },
+    {
+      "id": "ccdvf-t5-010",
+      "question": "What is the main reason to add jitter to exponential backoff?",
+      "options": [
+        "To make responses more creative",
+        "To prevent many clients from retrying at the same moment and overwhelming the service",
+        "To increase the number of tokens generated",
+        "To bypass rate limits"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Randomized delays spread out retries so synchronized retry spikes do not occur. Jitter does not affect output content or rate limit rules."
+    },
+    {
+      "id": "ccdvf-t5-011",
+      "question": "Which backoff pattern is generally preferred for transient failures?",
+      "options": [
+        "Fixed one-millisecond retries forever",
+        "Exponentially increasing delays with a maximum cap and attempt limit",
+        "No delay at all",
+        "Random retries every hour"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Exponential backoff with a cap and an attempt limit balances recovery with resource use. The other patterns risk flooding the service or waiting too long."
+    },
+    {
+      "id": "ccdvf-t5-012",
+      "question": "Why is it important to set a timeout on API calls?",
+      "options": [
+        "Timeouts make responses more accurate",
+        "Without timeouts, requests can hang indefinitely and exhaust application resources",
+        "Timeouts are required to receive a stop_reason",
+        "Timeouts reduce billing automatically"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Timeouts prevent stalled requests from tying up threads or connections. They do not change accuracy or billing."
+    },
+    {
+      "id": "ccdvf-t5-013",
+      "question": "A request times out, but the server may still have processed it. Why does this matter for write operations?",
+      "options": [
+        "It does not matter, since timeouts always cancel work",
+        "A retry may duplicate side effects such as a charge or a created record unless the operation is idempotent",
+        "Timeouts cause the model to change its answer",
+        "Timeouts only affect read-only tools"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The original action may have succeeded before the timeout. Retrying a non-idempotent action can duplicate its effects, so idempotency keys or status checks are needed."
+    },
+    {
+      "id": "ccdvf-t5-014",
+      "question": "Which technique helps make a non-idempotent operation safe to retry?",
+      "options": [
+        "Using a unique idempotency key so the server or system can recognize duplicate requests",
+        "Increasing max_tokens",
+        "Lowering temperature",
+        "Removing the system prompt"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Idempotency keys let a system detect that a request was already processed. The other options do not address duplicate side effects."
+    },
+    {
+      "id": "ccdvf-t5-015",
+      "question": "The Python SDK retries certain failed requests automatically. What should a developer understand about this behavior?",
+      "options": [
+        "Automatic retries never apply to any error",
+        "Built-in retries are a convenience, but the application should still configure and reason about retry limits and non-retryable errors",
+        "SDK retries mean the application never needs error handling",
+        "Retries are only available in streaming mode"
+      ],
+      "correctAnswer": 2,
+      "explanation": "SDKs commonly retry transient errors, but applications still need to handle final failures and understand which errors are retried. Relying on defaults alone is risky."
+    },
+    {
+      "id": "ccdvf-t5-016",
+      "question": "A developer wraps every API call in a loop that retries forever until success. What is the main risk?",
+      "options": [
+        "No risk, since success is eventually guaranteed",
+        "Permanent errors such as invalid requests will loop indefinitely, wasting resources and hiding the real problem",
+        "The API key is revealed",
+        "Tokens are billed at a lower rate"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Infinite retries never succeed for permanent errors and can overwhelm systems. Bounded retries with clear failure handling are safer."
+    },
+    {
+      "id": "ccdvf-t5-017",
+      "question": "Which logging practice best supports troubleshooting API errors?",
+      "options": [
+        "Logging only that an error occurred, with no details",
+        "Logging the status code, error type, request ID, and timing, while protecting sensitive content",
+        "Logging full API keys for convenience",
+        "Disabling logs to improve speed"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Structured error details and request IDs help diagnose issues and contact support. Sensitive data must be protected, and keys should never be logged."
+    },
+    {
+      "id": "ccdvf-t5-018",
+      "question": "Why is the request ID from a response useful when an error occurs?",
+      "options": [
+        "It grants a discount on the next call",
+        "It uniquely identifies the request, which helps with debugging and support escalations",
+        "It selects a different model",
+        "It enables streaming"
+      ],
+      "correctAnswer": 2,
+      "explanation": "A request ID lets support and engineers trace a specific call. It has no effect on pricing, model choice, or streaming."
+    },
+    {
+      "id": "ccdvf-t5-019",
+      "question": "An application receives a 413 response for a request. What is the most likely cause?",
+      "options": [
+        "The request body is too large",
+        "The API key lacks permission",
+        "The model is overloaded",
+        "The response is complete"
+      ],
+      "correctAnswer": 1,
+      "explanation": "413 indicates the request exceeds the allowed size. The fix is to reduce the payload, not to retry unchanged."
+    },
+    {
+      "id": "ccdvf-t5-020",
+      "question": "A 429 error occurs during a batch job that sends requests as fast as possible. What is the best reliability improvement?",
+      "options": [
+        "Remove all delays so the batch finishes faster",
+        "Throttle the request rate and use a queue with bounded concurrency",
+        "Send each request twice to increase success",
+        "Switch to a larger context window"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Throttling and bounded concurrency keep request rates within limits and smooth load. Removing delays or duplicating requests makes rate limiting worse."
+    },
+    {
+      "id": "ccdvf-t5-021",
+      "question": "What is a circuit breaker pattern in this context?",
+      "options": [
+        "A hardware device that cools servers",
+        "A mechanism that stops sending requests after repeated failures for a period, giving the service time to recover",
+        "A billing feature that caps spending",
+        "A way to encrypt API keys"
+      ],
+      "correctAnswer": 2,
+      "explanation": "A circuit breaker temporarily halts calls after repeated failures, preventing cascading problems. It is a reliability pattern, not a hardware or billing feature."
+    },
+    {
+      "id": "ccdvf-t5-022",
+      "question": "A service depends on the API and the API becomes unavailable. Which design best preserves user experience?",
+      "options": [
+        "Crash the entire application",
+        "Provide graceful degradation, such as a cached response, a simpler fallback, or a clear message to the user",
+        "Show raw stack traces to users",
+        "Retry forever on the main thread"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Graceful degradation keeps the application useful during outages. Crashing, exposing traces, or blocking the main thread harms users."
+    },
+    {
+      "id": "ccdvf-t5-023",
+      "question": "What does it mean for an error to be retryable?",
+      "options": [
+        "The error will always be fixed by retrying",
+        "The error is likely transient, so retrying with backoff may succeed",
+        "The error proves the request was malformed",
+        "The error must be reported to Anthropic before retrying"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Retryable errors are typically transient, such as rate limits or temporary overload. Retrying is not guaranteed to succeed, and it does not require reporting first."
+    },
+    {
+      "id": "ccdvf-t5-024",
+      "question": "An application handles errors by checking only for a successful status code and ignoring the body. What is the problem?",
+      "options": [
+        "There is no problem",
+        "Error bodies contain details needed for diagnosis, and handling them is necessary for correct behavior",
+        "Status codes are unrelated to success",
+        "Response bodies are always empty"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Error responses include a type and message that help determine the correct action. Ignoring them hinders debugging and recovery."
+    },
+    {
+      "id": "ccdvf-t5-025",
+      "question": "A team needs to stay within its rate limits during peak traffic. Which approach is most effective?",
+      "options": [
+        "Allow unlimited concurrent requests",
+        "Use client-side rate limiting, queuing, and monitoring of rate-limit headers",
+        "Disable monitoring",
+        "Increase max_tokens on every request"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Client-side throttling and queues keep traffic within limits, and monitoring headers helps adjust behavior. Unlimited concurrency and monitoring removal work against this goal."
+    },
+    {
+      "id": "ccdvf-t5-026",
+      "question": "Response headers include information about remaining rate-limit capacity. What is a good use of this information?",
+      "options": [
+        "Ignoring them entirely",
+        "Slowing request rates before limits are hit and surfacing capacity to operators",
+        "Using them as a billing invoice",
+        "Storing them as API keys"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Rate-limit headers let applications adapt proactively. Ignoring them removes that opportunity, and they are not billing or credential data."
+    },
+    {
+      "id": "ccdvf-t5-027",
+      "question": "A tool call inside an agent loop fails repeatedly with the same error. What should the loop do?",
+      "options": [
+        "Continue indefinitely with the same input",
+        "Stop after a bounded number of attempts and surface the failure, rather than looping forever",
+        "Delete the conversation history without reporting",
+        "Switch to temperature 2 and continue"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Bounded attempts prevent runaway loops and surface the issue for human attention. Infinite repetition wastes resources, and silent deletion hides the problem."
+    },
+    {
+      "id": "ccdvf-t5-028",
+      "question": "A request fails with a validation error because a parameter value is outside the allowed range. What is the best fix?",
+      "options": [
+        "Retry the same request several times",
+        "Correct the parameter value so it falls within the allowed range",
+        "Increase the timeout",
+        "Remove logging"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Validation errors require correcting the input. Retrying the same invalid request will fail again."
+    },
+    {
+      "id": "ccdvf-t5-029",
+      "question": "Which pattern best helps reliability when an application processes large volumes of work?",
+      "options": [
+        "Processing everything synchronously in one thread with no limits",
+        "Using queues with retries, dead-letter handling for persistent failures, and monitoring",
+        "Discarding failed items without record",
+        "Restarting the server after every error"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Queues with retries and dead-letter handling isolate failures and keep work moving. Discarding failures silently loses data."
+    },
+    {
+      "id": "ccdvf-t5-030",
+      "question": "What is a dead-letter queue used for?",
+      "options": [
+        "Storing successful responses for billing",
+        "Holding items that repeatedly fail so they can be inspected and handled without blocking other work",
+        "Encrypting API keys",
+        "Caching model outputs"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Dead-letter queues collect persistently failing items for later review. They do not handle billing, encryption, or caching."
+    },
+    {
+      "id": "ccdvf-t5-031",
+      "question": "When is it appropriate to show users a clear, friendly error message instead of technical details?",
+      "options": [
+        "Never, users should always see raw errors",
+        "Usually, while logging the technical details internally for engineers",
+        "Only in development environments",
+        "Only for streaming responses"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Users benefit from clear guidance, while engineers need technical details in logs. Exposing internals to users can reveal sensitive information."
+    },
+    {
+      "id": "ccdvf-t5-032",
+      "question": "A model response fails schema validation because a required field is missing. What is a sound recovery approach?",
+      "options": [
+        "Accept the partial data without checks",
+        "Validate the output, retry with clearer instructions or a corrective prompt a limited number of times, and fall back safely if it still fails",
+        "Ignore the field and continue",
+        "Increase max_tokens without other changes"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Validation followed by bounded retries with clearer instructions and a safe fallback is robust. Accepting invalid data or ignoring the problem leads to downstream failures."
+    },
+    {
+      "id": "ccdvf-t5-033",
+      "question": "Which metric is most useful for detecting reliability problems over time?",
+      "options": [
+        "The number of times developers committed code",
+        "Error rates by type, latency percentiles, and retry counts",
+        "The color of the dashboard",
+        "The length of the application's README"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Error rates, latency, and retries reveal trends and regressions. The other metrics do not reflect system reliability."
+    },
+    {
+      "id": "ccdvf-t5-034",
+      "question": "An application makes many concurrent requests and suddenly receives a burst of 429 errors. What should the team check first?",
+      "options": [
+        "Whether the concurrency level and request rate exceed the allowed limits for the account",
+        "Whether the user's favorite color is set",
+        "Whether the model name starts with a capital letter",
+        "Whether the logs are too detailed"
+      ],
+      "correctAnswer": 1,
+      "explanation": "A sudden burst of 429s usually points to concurrency or request rate exceeding limits. Checking this directly identifies the cause."
+    },
+    {
+      "id": "ccdvf-t5-035",
+      "question": "A developer retries every failed request, including those returning 400 errors. Why is this a problem?",
+      "options": [
+        "It is not a problem, since more attempts always help",
+        "Retrying invalid requests wastes resources and delays the discovery of the real bug",
+        "It causes the API key to rotate",
+        "It reduces the token count"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Non-retryable errors need a fix in the request. Retrying them wastes capacity and hides the underlying defect."
+    },
+    {
+      "id": "ccdvf-t5-036",
+      "question": "What is the best approach to handling a streaming response that fails halfway through?",
+      "options": [
+        "Display the partial text as if it were complete",
+        "Detect the failure, mark the output as incomplete, and retry or inform the user as appropriate",
+        "Restart the server",
+        "Ignore the failure because streams cannot fail"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Partial streams need explicit detection and handling, including marking incomplete output. Presenting partial text as complete misleads users."
+    },
+    {
+      "id": "ccdvf-t5-037",
+      "question": "A service must remain available when a single model or endpoint has an outage. What design supports this best?",
+      "options": [
+        "A single point of failure with no alternatives",
+        "Redundancy, such as a configured fallback option or alternate path, with monitoring",
+        "Disabling health checks",
+        "Hardcoding the failing endpoint"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Redundancy and fallbacks reduce the impact of an outage, and monitoring detects when they are needed. Single points of failure and disabled checks increase risk."
+    },
+    {
+      "id": "ccdvf-t5-038",
+      "question": "Why should error messages returned to Claude as tool results be specific and actionable?",
+      "options": [
+        "Specific messages make tools slower",
+        "Clear messages let Claude explain the problem or correct its next call",
+        "Specific messages change the billing rate",
+        "Claude ignores all error messages"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Actionable error messages enable recovery, such as fixing an argument or explaining the issue to the user. Vague messages leave Claude with no path forward."
+    },
+    {
+      "id": "ccdvf-t5-039",
+      "question": "Which practice reduces the risk of a single bad deployment causing widespread API errors?",
+      "options": [
+        "Deploying to all users at once without testing",
+        "Staged rollouts with monitoring of error rates and a tested rollback plan",
+        "Removing all error handling before release",
+        "Disabling alerts during deployment"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Staged rollouts and rollback plans limit the blast radius of errors and allow quick recovery. The other practices increase risk."
+    },
+    {
+      "id": "ccdvf-t5-040",
+      "question": "Which approach best describes a reliable error-handling strategy for a production Claude integration?",
+      "options": [
+        "Retry everything forever and ignore status codes",
+        "Classify errors, retry only transient failures with bounded backoff, validate outputs, use timeouts and circuit breakers, log request IDs, and degrade gracefully",
+        "Show raw errors to users and skip logging",
+        "Disable rate-limit headers to simplify code"
+      ],
+      "correctAnswer": 2,
+      "explanation": "A reliable strategy classifies errors, retries only what is retryable, validates outputs, enforces timeouts, protects against cascading failure, logs traceable details, and degrades gracefully. The other options each omit essential safeguards."
+    },
+    {
+      "id": "ccdvf-t5-041",
+      "question": "Which group of status codes is generally considered retryable with backoff?",
+      "options": [
+        "400 only",
+        "429 and 5xx server errors such as 500 and 529",
+        "401 and 403",
+        "404 only"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Rate limits and server-side errors are often transient, so bounded retries with backoff are appropriate. 400, 401, 403, and 404 generally require a change to the request, credentials, or resource."
+    },
+    {
+      "id": "ccdvf-t5-042",
+      "question": "Authentication starts failing right after an API key was rotated. What should be checked first?",
+      "options": [
+        "The model's temperature setting",
+        "Whether the new key is actually loaded in the environment where the application runs",
+        "The max_tokens value",
+        "The stop_reason of the last response"
+      ],
+      "correctAnswer": 2,
+      "explanation": "A stale or missing key in the deployed environment is a common cause after rotation. Sampling and output settings do not affect authentication."
+    },
+    {
+      "id": "ccdvf-t5-043",
+      "question": "What does exponential backoff mean for retry delays?",
+      "options": [
+        "Each retry waits progressively longer than the previous one",
+        "Each retry waits the same fixed amount of time",
+        "Retries happen before the first attempt",
+        "Each retry waits progressively less"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Exponential backoff increases the wait between attempts, usually by a multiplier, which reduces load during recovery. Fixed or decreasing delays do not provide this effect."
+    },
+    {
+      "id": "ccdvf-t5-044",
+      "question": "How can a developer typically adjust the SDK's retry and timeout behavior?",
+      "options": [
+        "Retries cannot be configured",
+        "Through client configuration options for retry count and timeouts",
+        "Only by setting an environment variable named CLAUDE_RETRY",
+        "Only during streaming"
+      ],
+      "correctAnswer": 2,
+      "explanation": "SDK clients generally expose options for retry counts and timeouts. Configuration is not limited to one environment variable or to streaming."
+    },
+    {
+      "id": "ccdvf-t5-045",
+      "question": "Which type of operation is generally safest to retry automatically?",
+      "options": [
+        "Charging a payment card",
+        "Read-only queries that do not change state",
+        "Sending an email",
+        "Creating a new order"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Read-only operations can be repeated without side effects. Charges, emails, and new orders can create duplicate effects if retried without safeguards."
+    },
+    {
+      "id": "ccdvf-t5-046",
+      "question": "A batch of 1,000 requests finishes with 30 failures due to rate limiting. What is the best recovery approach?",
+      "options": [
+        "Fail the whole batch and discard the successful results",
+        "Retry only the 30 failed items with backoff, keeping the successful results",
+        "Resubmit all 1,000 requests immediately",
+        "Ignore the 30 failures"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Retrying only the failed items avoids duplicating completed work and respects limits through backoff. Discarding successes or resubmitting everything wastes resources."
+    },
+    {
+      "id": "ccdvf-t5-047",
+      "question": "A tool cannot reach its database during a tool call. How should the failure be reported to Claude?",
+      "options": [
+        "Return a tool_result with is_error set and a clear message describing the problem",
+        "Return an empty successful result",
+        "Omit the tool_result entirely",
+        "Set a stop_reason manually"
+      ],
+      "correctAnswer": 1,
+      "explanation": "An error result with a clear message lets Claude explain the failure or try an alternative. Reporting success with empty data or omitting the result misleads Claude."
+    },
+    {
+      "id": "ccdvf-t5-048",
+      "question": "A client-side timeout is shorter than the time needed for long responses. What is the likely consequence?",
+      "options": [
+        "No consequence at all",
+        "Long generations may be cut off before completion, so timeouts should reflect expected output size",
+        "Timeouts automatically shorten the output",
+        "Timeouts disable streaming"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Timeouts that are too short can abort legitimate long responses. Setting them according to expected output size avoids this problem."
+    },
+    {
+      "id": "ccdvf-t5-049",
+      "question": "What is a sound approach to designing error alerts?",
+      "options": [
+        "Alert on every single error",
+        "Alert on sustained increases in error rate rather than on every isolated failure",
+        "Never create alerts",
+        "Alert only on billing changes"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Sustained error-rate alerts highlight real incidents without flooding teams with noise from isolated failures. The other options either cause alert fatigue or provide no monitoring."
+    },
+    {
+      "id": "ccdvf-t5-050",
+      "question": "Error logs for a failed request include the full user prompt, which contains personal data. What should the team do?",
+      "options": [
+        "Keep logging full prompts freely",
+        "Redact or minimize personal data in error logs according to privacy policy",
+        "Store personal data inside error codes",
+        "Remove timestamps from logs"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Logs should avoid unnecessary personal data and follow privacy requirements. Redaction preserves debugging value while reducing risk."
+    },
+    {
+      "id": "ccdvf-t5-051",
+      "question": "Rate limits are typically enforced at which level?",
+      "options": [
+        "Per individual request",
+        "Per account or organization, according to its usage tier and limits",
+        "Per browser tab",
+        "Per model response"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Rate limits are generally applied at the account or organization level, based on tier and configured limits. They are not tied to individual requests, tabs, or responses."
+    },
+    {
+      "id": "ccdvf-t5-052",
+      "question": "Reducing the number of concurrent requests most directly helps with which problem?",
+      "options": [
+        "Reducing the number of tokens in a single answer",
+        "Staying under rate limits when traffic is bursty",
+        "Improving the accuracy of answers",
+        "Increasing the context window"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Lower concurrency smooths bursts that would otherwise trigger rate limits. It does not change token counts, accuracy, or context size."
+    },
+    {
+      "id": "ccdvf-t5-053",
+      "question": "A team plans to switch to a fallback model during an outage. What must they do before relying on it?",
+      "options": [
+        "Nothing, because all models behave identically",
+        "Test that outputs remain acceptable, since behavior and quality can differ between models",
+        "Change the API key for every request",
+        "Disable output validation"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Models can vary in behavior and output format, so fallbacks should be tested against the application's requirements. Assuming identical behavior risks silent quality problems."
+    },
+    {
+      "id": "ccdvf-t5-054",
+      "question": "What is the purpose of defining reliability targets, such as an acceptable error rate or latency, for an integration?",
+      "options": [
+        "Reliability targets are irrelevant to engineering",
+        "They give teams measurable goals that guide monitoring, alerting, and decisions",
+        "Errors must be zero by policy",
+        "They define billing caps"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Measurable targets make reliability observable and actionable. They do not require zero errors and are not billing mechanisms."
+    },
+    {
+      "id": "ccdvf-t5-055",
+      "question": "A user-facing request retries repeatedly over several minutes before responding. What is the main concern?",
+      "options": [
+        "It always produces more accurate answers",
+        "The user may wait too long, so total retry time should be limited or the work moved to an asynchronous process",
+        "It removes the need for timeouts",
+        "It reduces billing automatically"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Long synchronous retries degrade user experience. Limiting total time or using asynchronous processing keeps the interaction responsive."
+    },
+    {
+      "id": "ccdvf-t5-056",
+      "question": "Streamed tool-input JSON fails to parse when the block completes. What is the best action?",
+      "options": [
+        "Execute the tool with the partial arguments",
+        "Do not execute the invalid input; return an error result to Claude or handle the failed turn appropriately",
+        "Delete the conversation history",
+        "Change temperature and continue"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Executing invalid or partial arguments can cause incorrect actions. Returning an error or handling the failure keeps the flow safe and recoverable."
+    },
+    {
+      "id": "ccdvf-t5-057",
+      "question": "Three tools are called in parallel and one of them fails. How should the results be returned?",
+      "options": [
+        "Discard all three results",
+        "Return results for all three, marking the failed one with is_error",
+        "Send only the failed result",
+        "Retry the whole conversation indefinitely"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Returning all results, with the failed one clearly marked, gives Claude a complete picture of what succeeded and what did not. Discarding successful results wastes work."
+    },
+    {
+      "id": "ccdvf-t5-058",
+      "question": "A DNS lookup fails before the request reaches the API. How should this be classified?",
+      "options": [
+        "An API 404 status code",
+        "A client-side connectivity error that should be handled separately from API responses",
+        "A 429 rate-limit error",
+        "A model stop_reason"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Network failures occur before any API response exists, so they are client-side connectivity errors. Handling them separately from HTTP status codes improves diagnosis."
+    },
+    {
+      "id": "ccdvf-t5-059",
+      "question": "An application receives a shutdown signal while requests are in flight. What is the most reliable behavior?",
+      "options": [
+        "Terminate immediately and lose all work",
+        "Stop accepting new work, let in-flight requests finish or record them for retry",
+        "Ignore the signal",
+        "Restart all requests in parallel"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Graceful shutdown preserves work and avoids data loss. Abrupt termination or ignoring the signal creates unnecessary failures."
+    },
+    {
+      "id": "ccdvf-t5-060",
+      "question": "Which statement best describes safe retry practice?",
+      "options": [
+        "Retry every error",
+        "Retry only transient errors, with bounded and jittered backoff, and only for operations that are idempotent or protected from duplicate effects",
+        "Never retry any request",
+        "Retry without limits to guarantee success"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Safe retries target transient failures, are bounded, use jitter, and protect against duplicate side effects. The other options either waste resources or risk harm."
+    }
+  ]
+}
