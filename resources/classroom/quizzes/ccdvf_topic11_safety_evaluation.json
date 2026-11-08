@@ -1,0 +1,728 @@
+{
+  "schemaVersion": 1,
+  "subject": "Claude Certified Developer - Foundations (CCDV-F)",
+  "topicId": 11,
+  "topic": "Safety, Security, and Evaluation",
+  "questionnaires": [
+    {
+      "id": "ccdvf-t11-001",
+      "question": "Why should API keys never be embedded in client-side code such as a web page or mobile app?",
+      "options": [
+        "Browsers cannot send HTTP requests",
+        "Anyone who inspects the client can extract the key and use it, so requests should go through a server that holds the secret",
+        "The key expires immediately in browsers",
+        "The API only accepts requests from desktop computers"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Client-side code is visible to users, so secrets there are exposed. A server-side proxy keeps the key private and can enforce controls."
+    },
+    {
+      "id": "ccdvf-t11-002",
+      "question": "What is the safest way to store an API key in a deployed server application?",
+      "options": [
+        "Hardcode it in the source code and commit it",
+        "Store it in an environment variable or a dedicated secret manager with restricted access",
+        "Write it into a public README",
+        "Send it in every log message for debugging"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Environment variables and secret managers keep credentials out of source control and logs, and they allow access control and rotation."
+    },
+    {
+      "id": "ccdvf-t11-003",
+      "question": "A developer accidentally commits an API key to a public repository. What is the most important immediate action?",
+      "options": [
+        "Delete the commit and assume no one saw it",
+        "Revoke or rotate the exposed key immediately, then review usage for misuse",
+        "Wait a week to see if anyone notices",
+        "Change the repository name only"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Exposed keys should be treated as compromised. Revoking them and reviewing activity limits damage. Deleting a commit does not remove copies that may already exist."
+    },
+    {
+      "id": "ccdvf-t11-004",
+      "question": "Which principle best describes granting an application only the minimum permissions it needs?",
+      "options": [
+        "Maximum exposure",
+        "Least privilege",
+        "Shared root access",
+        "Open access by default"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Least privilege limits the impact of a compromised component or a mistake. The other options increase risk."
+    },
+    {
+      "id": "ccdvf-t11-005",
+      "question": "What is prompt injection?",
+      "options": [
+        "A type of model training technique",
+        "Malicious or unintended instructions embedded in inputs or retrieved content that try to override the system's intended behavior",
+        "A method for compressing prompts",
+        "A billing error"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Prompt injection exploits the fact that models process instructions and data together. It is a security risk when untrusted content influences behavior."
+    },
+    {
+      "id": "ccdvf-t11-006",
+      "question": "Which defense best reduces the risk of prompt injection from untrusted documents?",
+      "options": [
+        "Trusting all document content because it was uploaded",
+        "Treating retrieved or uploaded content as data, separating it clearly from instructions, and validating any actions before they execute",
+        "Removing the system prompt",
+        "Increasing temperature"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Defense combines clear data boundaries, authoritative system instructions, and validation of actions. No single measure is complete, but these reduce the risk substantially."
+    },
+    {
+      "id": "ccdvf-t11-007",
+      "question": "Why is prompt injection considered more serious for agents than for simple chatbots?",
+      "options": [
+        "Agents do not use language models",
+        "Agents can take actions through tools, so a successful injection may cause real effects such as data changes or messages sent",
+        "Chatbots cannot process text",
+        "Agents never receive external content"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The consequences of injection grow when the model can act. Tool permissions, approvals, and validation become critical."
+    },
+    {
+      "id": "ccdvf-t11-008",
+      "question": "A model response is used to construct a database query without validation, and the output contains malicious SQL. What vulnerability does this represent?",
+      "options": [
+        "Improved performance",
+        "Injection risk from trusting model output as code or commands",
+        "A correct use of structured output",
+        "A billing issue"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Model output is untrusted input to downstream systems. Using it directly in queries or commands enables injection. Parameterized queries and validation prevent this."
+    },
+    {
+      "id": "ccdvf-t11-009",
+      "question": "What is the best way to use model-generated text in a shell command?",
+      "options": [
+        "Concatenate it directly into the command string",
+        "Avoid building shell commands from model output, or use strict allowlists and safe argument handling",
+        "Run it as root",
+        "Store it in a comment"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Direct concatenation enables command injection. Allowlisted operations and safe argument passing limit what can run."
+    },
+    {
+      "id": "ccdvf-t11-010",
+      "question": "Why should sensitive operations require validation in code, not just a request in the prompt?",
+      "options": [
+        "Prompts are always more reliable than code",
+        "Prompt instructions can be bypassed or misapplied, while code-enforced checks provide dependable control",
+        "Code cannot check permissions",
+        "Validation is only for images"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Critical controls should be enforced by deterministic code. Model instructions are helpful but not reliable security boundaries."
+    },
+    {
+      "id": "ccdvf-t11-011",
+      "question": "A chatbot's system prompt contains confidential business logic. What is the best assumption to make about its security?",
+      "options": [
+        "The model will never reveal it under any circumstances",
+        "Users may be able to extract parts of the system prompt, so secrets should not be placed in prompts at all",
+        "Only developers can see the system prompt, so it is safe",
+        "System prompts are encrypted automatically"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Prompt contents can sometimes be extracted through clever queries. Sensitive values such as keys should be kept server-side and out of prompts entirely."
+    },
+    {
+      "id": "ccdvf-t11-012",
+      "question": "Which statement best describes data privacy responsibilities when using the API?",
+      "options": [
+        "The provider assumes all responsibility for the application's privacy practices",
+        "The developer remains responsible for how personal data is collected, minimized, retained, and protected in their application",
+        "Privacy is only relevant for images",
+        "Personal data cannot be processed at all"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Application developers control what data they send and store, so they carry responsibility for compliance and protection. Shared responsibility depends on the deployment."
+    },
+    {
+      "id": "ccdvf-t11-013",
+      "question": "What is the principle of data minimization in an AI application?",
+      "options": [
+        "Collecting as much data as possible for future use",
+        "Sending and retaining only the personal data needed for the specific task",
+        "Encrypting data but storing everything",
+        "Removing all user data from the application"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Minimization reduces exposure and compliance burden by limiting data to what is necessary. Collecting everything increases risk."
+    },
+    {
+      "id": "ccdvf-t11-014",
+      "question": "A team logs full prompts and responses for debugging, and those logs include personal information. What is the best change?",
+      "options": [
+        "Keep logging everything indefinitely",
+        "Redact or minimize personal data in logs, restrict access, and set retention limits",
+        "Store logs publicly for transparency",
+        "Delete all logs immediately without any record"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Redaction, access controls, and retention limits protect personal data while preserving useful debugging information. Public storage or unlimited retention increases risk."
+    },
+    {
+      "id": "ccdvf-t11-015",
+      "question": "Why should an application obtain appropriate user consent before sending personal data to an AI service?",
+      "options": [
+        "Consent is never required",
+        "Users should understand and agree to how their data is processed, and legal or policy requirements may apply",
+        "Consent only matters for images",
+        "Consent replaces security controls"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Transparency and consent are important privacy practices and are often legally required. Consent does not replace technical safeguards."
+    },
+    {
+      "id": "ccdvf-t11-016",
+      "question": "What is a sound approach to handling content that a model flags as potentially harmful in an application?",
+      "options": [
+        "Ignore all flags",
+        "Route flagged content to an appropriate review process and respond to users in a way that is safe and helpful",
+        "Disable all safety checks for speed",
+        "Publish the flagged content automatically"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Flagged content deserves review and a safe response. Ignoring flags or disabling checks increases harm."
+    },
+    {
+      "id": "ccdvf-t11-017",
+      "question": "Why should application developers avoid relying solely on the model to enforce content policies?",
+      "options": [
+        "Models are always perfect at policy enforcement",
+        "Models can make mistakes, and layered controls such as input filtering, output checks, and monitoring provide stronger protection",
+        "Policies cannot apply to models",
+        "Models never receive harmful inputs"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Defense in depth is the standard approach. Relying on one layer creates a single point of failure."
+    },
+    {
+      "id": "ccdvf-t11-018",
+      "question": "What does defense in depth mean for an AI application?",
+      "options": [
+        "Using one very strong control and no others",
+        "Layering several safeguards, such as input validation, permissions, output checks, and monitoring, so that a failure in one layer is caught by another",
+        "Making the application as deep as possible in code size",
+        "Storing data at greater depths in the database"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Layered controls reduce the chance that a single failure leads to harm. The other options misinterpret the term."
+    },
+    {
+      "id": "ccdvf-t11-019",
+      "question": "Why is it important to treat outputs from a language model as untrusted before using them in sensitive contexts?",
+      "options": [
+        "Model outputs are always verified",
+        "Model outputs can be wrong, biased, or manipulated, so they should be validated before influencing decisions or systems",
+        "Outputs are only text and cannot cause effects",
+        "Outputs are encrypted"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Outputs can be incorrect or influenced by injected content. Validation before use protects downstream systems and users."
+    },
+    {
+      "id": "ccdvf-t11-020",
+      "question": "What is the main purpose of evaluation in an AI application?",
+      "options": [
+        "To prove the model is perfect",
+        "To measure quality, safety, and reliability on representative cases so changes can be compared objectively",
+        "To replace testing of the application code",
+        "To reduce the number of users"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Evaluation provides evidence about performance on realistic inputs and supports informed decisions. It does not guarantee perfection or replace software testing."
+    },
+    {
+      "id": "ccdvf-t11-021",
+      "question": "What makes an evaluation set useful?",
+      "options": [
+        "It contains only easy examples",
+        "It reflects real usage, covers edge cases and failure modes, and has clear criteria for correct outcomes",
+        "It is kept private and never updated",
+        "It uses random text with no labels"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Useful evaluation sets are representative and include difficult cases with clear success criteria. Easy-only or unlabeled sets give misleading results."
+    },
+    {
+      "id": "ccdvf-t11-022",
+      "question": "A team changes a prompt and reports that quality improved because the new outputs look better in a few examples. What is the main weakness of this evidence?",
+      "options": [
+        "There is no weakness",
+        "A handful of examples may not represent the full range of inputs, so the improvement may not generalize",
+        "Examples always prove improvement",
+        "Examples are only useful for images"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Small hand-picked samples can mislead. A representative evaluation set with measured results gives more reliable evidence."
+    },
+    {
+      "id": "ccdvf-t11-023",
+      "question": "Why should evaluation include adversarial or edge-case inputs?",
+      "options": [
+        "Adversarial inputs are never encountered in practice",
+        "They reveal how the system behaves under stress, including misuse, ambiguity, and injection attempts",
+        "They replace normal test cases",
+        "They change the model's training"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Real systems face unusual and malicious inputs. Testing them uncovers weaknesses that ordinary cases miss."
+    },
+    {
+      "id": "ccdvf-t11-024",
+      "question": "Which approach is most reliable for judging whether an answer is accurate?",
+      "options": [
+        "Asking the model whether its answer is accurate and accepting the reply",
+        "Comparing answers to verified reference answers or checking claims against authoritative sources",
+        "Judging only by how confident the answer sounds",
+        "Counting the number of words in the answer"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Verified references and source checks provide objective grounding. Self-assessment and confidence are not reliable measures of accuracy."
+    },
+    {
+      "id": "ccdvf-t11-025",
+      "question": "When is model-based grading, where a model scores another model's output, most appropriate?",
+      "options": [
+        "Never, because models cannot judge quality",
+        "For scalable assessment of certain qualities, provided the grading criteria are clear and the grader is itself validated against human judgments",
+        "For all high-stakes decisions without human review",
+        "Only for images"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Model graders can scale evaluation when criteria are clear and calibrated against humans. Without validation, their judgments may be biased or inconsistent."
+    },
+    {
+      "id": "ccdvf-t11-026",
+      "question": "A team wants to compare two prompt versions fairly. What is the most important experimental practice?",
+      "options": [
+        "Use different test sets for each version",
+        "Use the same representative test set and the same evaluation criteria for both versions",
+        "Test only the version the team prefers",
+        "Change the model between tests"
+      ],
+      "correctAnswer": 2,
+      "explanation": "A fair comparison holds the test set and criteria constant. Changing them or testing selectively biases results."
+    },
+    {
+      "id": "ccdvf-t11-027",
+      "question": "What does a regression test in AI evaluation check?",
+      "options": [
+        "Whether a new change improved everything at once",
+        "Whether previously working behavior still works after a change",
+        "Whether the model's name changed",
+        "Whether billing is correct"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Regression tests detect unintended breakage. Prompt, model, or retrieval changes can silently degrade behavior that once worked."
+    },
+    {
+      "id": "ccdvf-t11-028",
+      "question": "Why is it useful to track evaluation results over time?",
+      "options": [
+        "Historical data is never useful",
+        "It reveals trends, regressions, and the effects of changes, supporting informed decisions",
+        "It replaces monitoring in production",
+        "It changes the model's behavior"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Trends show whether quality is improving or degrading. Historical records also support accountability and audits."
+    },
+    {
+      "id": "ccdvf-t11-029",
+      "question": "What is the purpose of monitoring an AI application in production?",
+      "options": [
+        "To eliminate the need for evaluation before release",
+        "To detect quality drops, safety incidents, misuse, cost spikes, and errors that offline tests may not reveal",
+        "To remove logs",
+        "To replace security reviews"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Production behavior can differ from test conditions. Monitoring catches real-world issues early. It complements pre-release evaluation rather than replacing it."
+    },
+    {
+      "id": "ccdvf-t11-030",
+      "question": "A monitoring dashboard shows a sudden increase in refusals and flagged content for a specific feature. What is the best first step?",
+      "options": [
+        "Disable monitoring",
+        "Investigate whether the change is due to a new prompt, a new user behavior, or an attack pattern, and review representative examples",
+        "Remove the feature without investigation",
+        "Increase temperature"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Investigating the root cause guides the right response. Disabling monitoring or removing features blindly may hide the issue or cause unnecessary harm."
+    },
+    {
+      "id": "ccdvf-t11-031",
+      "question": "What is the main reason to red-team an AI application before launch?",
+      "options": [
+        "To make the application look more impressive",
+        "To proactively discover ways the system can be misused or fail, so mitigations can be built in",
+        "To replace formal testing",
+        "To avoid the need for monitoring"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Red-teaming surfaces weaknesses from an adversarial perspective. Finding them before launch allows safer design decisions."
+    },
+    {
+      "id": "ccdvf-t11-032",
+      "question": "Which factor most determines how much human review an AI output requires?",
+      "options": [
+        "The color of the output",
+        "The consequences of errors and whether the output is reversible or affects people significantly",
+        "The length of the output",
+        "The time of day"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Higher-stakes and irreversible outputs require more human oversight. Surface features do not determine the level of review."
+    },
+    {
+      "id": "ccdvf-t11-033",
+      "question": "A healthcare application uses a model to summarize patient notes for clinicians. What is the most important safeguard?",
+      "options": [
+        "Let the summaries be used directly for treatment decisions without review",
+        "Keep clinicians in the loop, verify summaries against source notes, and follow applicable privacy and clinical governance requirements",
+        "Remove patient identifiers from the system entirely and skip review",
+        "Increase temperature for more readable summaries"
+      ],
+      "correctAnswer": 2,
+      "explanation": "High-stakes clinical use requires human oversight, verification, and compliance with privacy rules. Unreviewed outputs risk harm."
+    },
+    {
+      "id": "ccdvf-t11-034",
+      "question": "Why should an application clearly tell users when they are interacting with an AI system?",
+      "options": [
+        "Disclosure is never necessary",
+        "Transparency builds appropriate trust and lets users calibrate how much to rely on the output",
+        "Disclosure makes the model less accurate",
+        "Disclosure is only needed for images"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Transparency helps users make informed decisions and supports ethical and legal expectations. It does not affect accuracy."
+    },
+    {
+      "id": "ccdvf-t11-035",
+      "question": "What is a reasonable approach to handling a user who asks an application to reveal another person's private information?",
+      "options": [
+        "Provide the information because the user asked",
+        "Decline to reveal private information about others and direct the user to appropriate channels",
+        "Invent a plausible answer",
+        "Share the information publicly"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Protecting third-party privacy is essential. Declining and redirecting is the safe, appropriate response."
+    },
+    {
+      "id": "ccdvf-t11-036",
+      "question": "Why should a team document the intended use, limitations, and known failure modes of their AI application?",
+      "options": [
+        "Documentation is never useful",
+        "It sets appropriate expectations for users and operators and supports responsible deployment and oversight",
+        "Documentation replaces testing",
+        "Documentation changes the model's accuracy"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Clear documentation helps people use the system appropriately and identify risks. It complements, rather than replaces, testing and monitoring."
+    },
+    {
+      "id": "ccdvf-t11-037",
+      "question": "Which practice best supports secure handling of user uploads in an AI application?",
+      "options": [
+        "Process any file without checks",
+        "Validate file types and sizes, scan where appropriate, and treat file contents as untrusted data",
+        "Execute uploaded files automatically",
+        "Store uploads publicly"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Uploads can contain malicious content or injected instructions. Validation and treating content as untrusted reduce risk."
+    },
+    {
+      "id": "ccdvf-t11-038",
+      "question": "What is the risk of allowing an application to browse arbitrary web pages on behalf of a user without restrictions?",
+      "options": [
+        "There is no risk",
+        "The application may reach harmful content, leak information, or follow injected instructions from untrusted pages",
+        "Browsing always improves security",
+        "Browsing only affects billing"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Unrestricted browsing exposes the system to untrusted content and potential data leakage. Restrictions and content handling reduce the risk."
+    },
+    {
+      "id": "ccdvf-t11-039",
+      "question": "Why is rate limiting a security measure as well as a reliability measure?",
+      "options": [
+        "Rate limits have no security value",
+        "It helps prevent abuse such as scraping, brute-force attempts, and cost-draining attacks on an application",
+        "Rate limits replace authentication",
+        "Rate limits only affect images"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Limits on request volume reduce abuse and protect cost and availability. They complement, not replace, authentication and authorization."
+    },
+    {
+      "id": "ccdvf-t11-040",
+      "question": "An application exposes an endpoint that calls the model. What is the most important access control?",
+      "options": [
+        "No access control, since the model is safe",
+        "Authentication and authorization so only permitted users can call the endpoint and access their own data",
+        "A public endpoint with no limits",
+        "Access controls based only on the user's favorite color"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Authentication and authorization ensure only the right people reach the functionality and data. Public, unlimited endpoints invite abuse."
+    },
+    {
+      "id": "ccdvf-t11-041",
+      "question": "Why should logs of security-relevant events, such as failed authentication or blocked actions, be retained and reviewed?",
+      "options": [
+        "Security logs are never useful",
+        "They help detect attacks, investigate incidents, and verify that controls are working",
+        "They replace firewalls",
+        "They should be deleted immediately"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Security logs support detection and investigation. They should be protected and retained according to policy."
+    },
+    {
+      "id": "ccdvf-t11-042",
+      "question": "A team wants to use an AI feature to generate responses that customers will receive directly. What is the most appropriate evaluation approach before launch?",
+      "options": [
+        "Ship without evaluation and fix problems reactively",
+        "Evaluate quality, accuracy, and safety on representative and adversarial inputs, and pilot with limited exposure before broad release",
+        "Test only with internal staff who know the system well",
+        "Rely on the model's self-assessment"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Representative, adversarial evaluation and staged rollout reduce risk for customer-facing outputs. Reactive fixes and internal-only tests miss important failures."
+    },
+    {
+      "id": "ccdvf-t11-043",
+      "question": "What does it mean for an evaluation to be reproducible?",
+      "options": [
+        "The results are random each time",
+        "The same inputs, criteria, and configuration produce consistent, comparable results when re-run",
+        "The evaluation runs only once",
+        "The evaluation uses private data only"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Reproducibility allows fair comparison and trust in results. Controlling inputs, criteria, and settings makes runs comparable."
+    },
+    {
+      "id": "ccdvf-t11-044",
+      "question": "Why should an evaluation set be kept separate from the examples used to develop a prompt?",
+      "options": [
+        "Separation is unnecessary",
+        "Using the same examples for development and evaluation can inflate results, since the prompt may be tuned to those cases",
+        "Development examples are always wrong",
+        "Evaluation sets must be larger than the whole internet"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Held-out evaluation data estimates performance on unseen inputs. Reusing development examples overstates how well the system generalizes."
+    },
+    {
+      "id": "ccdvf-t11-045",
+      "question": "What is a common reason an evaluation shows strong results in testing but weak results in production?",
+      "options": [
+        "Production users always behave exactly like testers",
+        "The test set does not reflect real inputs, distribution, or edge cases encountered in production",
+        "Production servers are always slower",
+        "The model changes its name in production"
+      ],
+      "correctAnswer": 2,
+      "explanation": "A mismatch between test data and real usage is a frequent cause. Updating evaluation sets with production samples helps close the gap."
+    },
+    {
+      "id": "ccdvf-t11-046",
+      "question": "Which metric pairing is most useful when evaluating a safety filter that flags harmful content?",
+      "options": [
+        "Only the total number of flags",
+        "Both the rate of harmful content missed and the rate of benign content incorrectly flagged",
+        "Only the length of flagged messages",
+        "Only the color of the interface"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Filters can fail in two directions, missing harm or blocking legitimate content. Measuring both reveals the trade-off."
+    },
+    {
+      "id": "ccdvf-t11-047",
+      "question": "Why is human evaluation still valuable even when automated metrics exist?",
+      "options": [
+        "Humans are always wrong",
+        "Human judgment captures nuance, context, and harm that automated metrics may miss, and helps calibrate automated graders",
+        "Human evaluation is never needed",
+        "Humans cannot read model outputs"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Automated metrics are efficient but imperfect. Human review catches subtleties and validates the automated methods."
+    },
+    {
+      "id": "ccdvf-t11-048",
+      "question": "A team's evaluation shows high average quality, but a small group of users consistently receives poor answers. What should the team examine?",
+      "options": [
+        "Ignore the group, since the average is good",
+        "Analyze performance by segment, since averages can hide failures affecting specific user groups or input types",
+        "Remove the group from the evaluation",
+        "Increase temperature for everyone"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Segmented analysis reveals disparities hidden by averages. Fairness and reliability depend on addressing failures for specific groups."
+    },
+    {
+      "id": "ccdvf-t11-049",
+      "question": "What does fairness evaluation involve in an AI application?",
+      "options": [
+        "Ensuring the model is the same speed for every user",
+        "Checking whether quality, errors, or harms differ inappropriately across groups or contexts, and addressing meaningful disparities",
+        "Giving every user the same answer",
+        "Removing all demographic information from the interface"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Fairness evaluation looks for disparities in outcomes across relevant groups. It is not about identical responses or speed."
+    },
+    {
+      "id": "ccdvf-t11-050",
+      "question": "A developer wants to know whether a model's answer is biased by how a question is phrased. What is the best test?",
+      "options": [
+        "Ask the question once and accept the answer",
+        "Ask equivalent questions with varied neutral and leading phrasings, and compare the responses for consistency",
+        "Ask the model whether it is biased",
+        "Only test in English"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Comparing responses across equivalent phrasings reveals sensitivity to framing. Self-report is not reliable evidence of bias."
+    },
+    {
+      "id": "ccdvf-t11-051",
+      "question": "Why should a team set clear acceptance criteria before running an evaluation?",
+      "options": [
+        "Criteria are unnecessary if the outputs look good",
+        "Pre-set criteria prevent moving the goalposts after seeing results and make decisions transparent and defensible",
+        "Criteria make evaluation slower with no benefit",
+        "Criteria replace data collection"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Defining success in advance reduces bias in interpretation. Post-hoc criteria can make any result look acceptable."
+    },
+    {
+      "id": "ccdvf-t11-052",
+      "question": "An application stores conversation history that includes sensitive information. What is the most appropriate retention practice?",
+      "options": [
+        "Keep it forever without review",
+        "Keep only what is needed, define retention periods, and delete data according to policy",
+        "Store it in a public location for transparency",
+        "Share it with third parties by default"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Defined retention and deletion limit exposure and support compliance. Indefinite storage and public or default sharing increase risk."
+    },
+    {
+      "id": "ccdvf-t11-053",
+      "question": "Why is it important to protect the integrity of an evaluation dataset?",
+      "options": [
+        "Integrity does not matter for evaluation",
+        "If the dataset is leaked into training or tuning, results become inflated and no longer measure real generalization",
+        "Integrity only matters for images",
+        "Datasets should be shared publicly so everyone can tune to them"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Contamination of evaluation data leads to misleadingly high scores. Keeping test data held out preserves the measurement's validity."
+    },
+    {
+      "id": "ccdvf-t11-054",
+      "question": "A team deploys a new model version and sees a drop in a safety metric. What is the most appropriate response?",
+      "options": [
+        "Ignore it if overall quality improved",
+        "Investigate the drop, consider rolling back or adding mitigations, and do not expand rollout until the issue is understood",
+        "Delete the safety metric",
+        "Increase traffic to the new version immediately"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Safety regressions warrant investigation and a cautious response. Overall quality gains do not offset a safety degradation."
+    },
+    {
+      "id": "ccdvf-t11-055",
+      "question": "Which practice best supports responsible handling of a model that occasionally produces offensive content?",
+      "options": [
+        "Accept it as unavoidable and do nothing",
+        "Add output filtering, improve instructions and evaluation, monitor incidents, and provide a reporting channel for users",
+        "Remove all evaluation",
+        "Hide the issue from stakeholders"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Layered mitigation, evaluation, monitoring, and user reporting address the problem systematically. Ignoring or concealing it increases harm."
+    },
+    {
+      "id": "ccdvf-t11-056",
+      "question": "What is the main purpose of a staged rollout for an AI feature?",
+      "options": [
+        "To delay the feature indefinitely",
+        "To limit exposure while monitoring quality and safety, so problems are caught before they affect all users",
+        "To avoid collecting feedback",
+        "To increase the number of errors"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Staged rollouts contain the impact of problems and provide real-world evidence before full release. They support safe decisions."
+    },
+    {
+      "id": "ccdvf-t11-057",
+      "question": "Why should an application provide users with a way to report problematic outputs?",
+      "options": [
+        "Reports are never useful",
+        "Reports surface real-world failures that testing may miss and help teams prioritize improvements",
+        "Reports replace monitoring",
+        "Reports change the model's training"
+      ],
+      "correctAnswer": 2,
+      "explanation": "User reports reveal failures in real usage. They complement automated monitoring and evaluation."
+    },
+    {
+      "id": "ccdvf-t11-058",
+      "question": "A developer uses a model to classify customer messages by urgency, and misclassifications could delay critical responses. Which evaluation metric is most important to examine?",
+      "options": [
+        "Average response length",
+        "Errors on high-urgency messages, since missing those has the greatest consequence",
+        "Number of words in the prompt",
+        "Model name"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Evaluation should weight errors by their consequences. Missing urgent messages is the most costly failure here."
+    },
+    {
+      "id": "ccdvf-t11-059",
+      "question": "Which statement about safety guardrails is most accurate?",
+      "options": [
+        "Guardrails make the application unusable by design",
+        "Guardrails reduce risk when designed to match the application's use case and tested for both over-blocking and under-blocking",
+        "Guardrails are unnecessary for trusted users",
+        "Guardrails only apply to images"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Effective guardrails are tailored and tested in both directions. Overly strict or overly lax guardrails both cause problems."
+    },
+    {
+      "id": "ccdvf-t11-060",
+      "question": "Which approach best describes a production-ready approach to safety, security, and evaluation for a Claude-based application?",
+      "options": [
+        "Ship quickly, skip evaluation, and rely on the model to be safe",
+        "Protect secrets and least-privilege access, treat inputs and outputs as untrusted, enforce critical controls in code, minimize and protect personal data, evaluate on representative and adversarial cases with clear criteria, red-team before launch, roll out in stages, and monitor and respond to incidents",
+        "Store all keys in client code for convenience",
+        "Log everything publicly to build trust"
+      ],
+      "correctAnswer": 2,
+      "explanation": "A mature approach combines secret management, least privilege, untrusted-input handling, code-enforced controls, privacy protections, rigorous evaluation, red-teaming, staged rollout, and monitoring. The other options each expose the system to serious risk."
+    }
+  ]
+}
