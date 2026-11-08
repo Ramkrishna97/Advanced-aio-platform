@@ -1,0 +1,728 @@
+{
+  "schemaVersion": 1,
+  "subject": "Claude Certified Developer - Foundations (CCDV-F)",
+  "topicId": 10,
+  "topic": "Claude Code and Developer Tooling",
+  "questionnaires": [
+    {
+      "id": "ccdvf-t10-001",
+      "question": "What is Claude Code best described as?",
+      "options": [
+        "A spreadsheet add-in for financial models",
+        "An agentic coding tool that lets developers delegate programming tasks to Claude from the terminal, desktop, or other supported environments",
+        "A hosted database service",
+        "A browser plugin that only formats web pages"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Claude Code is an agentic coding tool that works on software tasks such as writing, debugging, and reviewing code. The other options describe unrelated products."
+    },
+    {
+      "id": "ccdvf-t10-002",
+      "question": "What is the purpose of a CLAUDE.md file in a project?",
+      "options": [
+        "It stores the API key for the project",
+        "It provides persistent project instructions and conventions that Claude Code can read to work more effectively",
+        "It replaces the source code",
+        "It configures the billing plan"
+      ],
+      "correctAnswer": 2,
+      "explanation": "CLAUDE.md holds project-specific guidance such as build commands, coding conventions, and architecture notes. It should not store secrets, and it does not replace code or configure billing."
+    },
+    {
+      "id": "ccdvf-t10-003",
+      "question": "Where should a team store a secret API key used by a project that Claude Code works on?",
+      "options": [
+        "Directly in CLAUDE.md so Claude always has it",
+        "In an environment variable or secret manager, not in committed project files",
+        "In a comment inside a source file",
+        "In the commit message"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Secrets belong in environment variables or secret managers. Committing them to instruction files or source code exposes them to anyone with repository access."
+    },
+    {
+      "id": "ccdvf-t10-004",
+      "question": "A developer wants Claude Code to follow team coding standards in every session on a project. What is the most appropriate place to record these standards?",
+      "options": [
+        "Only in the developer's memory, to be typed each time",
+        "In the project's CLAUDE.md file, which is read as persistent context",
+        "In a random file named standards.txt in the home directory only",
+        "In the API response headers"
+      ],
+      "correctAnswer": 2,
+      "explanation": "A project-level instruction file gives consistent guidance across sessions and team members. Relying on memory or unrelated files does not provide that persistence."
+    },
+    {
+      "id": "ccdvf-t10-005",
+      "question": "Why is it useful to keep CLAUDE.md concise and specific?",
+      "options": [
+        "Long files are always rejected",
+        "Clear, focused instructions are easier for Claude to apply consistently, while bloated files add noise",
+        "Concise files reduce the number of tests",
+        "Specific files change the model version"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Focused instructions improve adherence and reduce irrelevant context. Length itself is not forbidden, but noise makes guidance less effective."
+    },
+    {
+      "id": "ccdvf-t10-006",
+      "question": "What is the main advantage of plan mode when working on a complex coding change?",
+      "options": [
+        "It skips all reviews",
+        "It lets Claude propose an approach for review before making edits, which helps catch misunderstandings early",
+        "It disables version control",
+        "It automatically deploys to production"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Reviewing a plan before changes are made surfaces misunderstandings before they become code. Plan mode does not disable version control or deploy anything."
+    },
+    {
+      "id": "ccdvf-t10-007",
+      "question": "Claude Code proposes to run a shell command that modifies files outside the project. What is the best response?",
+      "options": [
+        "Approve it automatically without reading",
+        "Review the command, confirm it is intended and safe, and deny it if it is not",
+        "Disable all permission prompts",
+        "Run it in production to test"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Developers should review commands that affect files or systems outside the intended scope. Blanket approval removes an important safety check."
+    },
+    {
+      "id": "ccdvf-t10-008",
+      "question": "Why should a team configure permission rules so that some commands are allowed without prompts and others always require approval?",
+      "options": [
+        "Permission rules are unnecessary for safe tools",
+        "It balances productivity for routine, low-risk commands with protection against destructive or sensitive operations",
+        "Permission rules change the model's temperature",
+        "Permission rules replace version control"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Allowlists for routine safe operations and prompts for risky ones combine efficiency with safety. The other options misstate the purpose of permissions."
+    },
+    {
+      "id": "ccdvf-t10-009",
+      "question": "Which practice is most important before letting Claude Code make broad changes across a codebase?",
+      "options": [
+        "Commit the current work, so changes can be reviewed and reverted if needed",
+        "Delete the git history",
+        "Turn off all tests",
+        "Share the production credentials"
+      ],
+      "correctAnswer": 1,
+      "explanation": "A clean version control state makes it easy to review diffs and revert mistakes. Deleting history or disabling tests removes safety nets."
+    },
+    {
+      "id": "ccdvf-t10-010",
+      "question": "After Claude Code makes a change, what is the best way for a developer to verify it?",
+      "options": [
+        "Assume it is correct because it looks confident",
+        "Review the diff, run the test suite, and check behavior against requirements",
+        "Merge it directly into the main branch without review",
+        "Ask Claude whether it is correct and accept the reply"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Verification through diff review, tests, and requirement checks is the reliable approach. Self-assessment and unreviewed merges are not sufficient evidence."
+    },
+    {
+      "id": "ccdvf-t10-011",
+      "question": "Why is it useful to ask Claude Code to write or run tests as part of a change?",
+      "options": [
+        "Tests slow down development without benefit",
+        "Tests provide executable evidence that behavior matches expectations and help catch regressions",
+        "Tests replace code review",
+        "Tests are only useful for documentation"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Automated tests give concrete, repeatable verification and guard against regressions. They complement, rather than replace, code review."
+    },
+    {
+      "id": "ccdvf-t10-012",
+      "question": "What is a slash command in Claude Code?",
+      "options": [
+        "A typo in a file path",
+        "A shortcut command typed in the interface that triggers a built-in or custom action",
+        "A Unix permission setting",
+        "A method for encrypting code"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Slash commands are shortcuts for actions within the Claude Code interface, including built-in and project-defined commands. They are not file path typos or permission settings."
+    },
+    {
+      "id": "ccdvf-t10-013",
+      "question": "A team wants a repeatable workflow, such as running a review checklist, available to every developer on a project. What is a good approach?",
+      "options": [
+        "Ask each developer to recreate it from memory",
+        "Define a shared custom command in the project so the workflow is consistent for everyone",
+        "Store it only in a personal scratch file",
+        "Email the steps once"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Shared, version-controlled commands make workflows consistent across the team. Relying on memory or personal files leads to drift."
+    },
+    {
+      "id": "ccdvf-t10-014",
+      "question": "What is the purpose of subagents in Claude Code?",
+      "options": [
+        "To replace the developer's version control",
+        "To delegate focused subtasks to specialized agents with their own context, keeping the main session organized",
+        "To increase the number of API keys",
+        "To disable tool use"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Subagents handle focused subtasks in separate context, which keeps the main conversation focused. They do not replace version control, manage keys, or disable tools."
+    },
+    {
+      "id": "ccdvf-t10-015",
+      "question": "Why might a developer use a subagent to investigate a large codebase question?",
+      "options": [
+        "Subagents always produce the final answer without review",
+        "The investigation can consume a lot of context, and a subagent can explore it separately, returning a concise summary to the main session",
+        "Subagents remove the need for tests",
+        "Subagents only work in browsers"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Isolating exploratory work keeps the main context clean while still delivering findings. The results still require review, so the first option is incorrect."
+    },
+    {
+      "id": "ccdvf-t10-016",
+      "question": "What are hooks in a developer tooling workflow?",
+      "options": [
+        "Physical devices connected to a server",
+        "Configured actions that run automatically at defined points in the workflow, such as before or after a tool use",
+        "Decorative styles for code",
+        "Billing rules"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Hooks let teams run checks or actions automatically at defined events, such as formatting after edits or blocking risky commands. They are not hardware, styling, or billing rules."
+    },
+    {
+      "id": "ccdvf-t10-017",
+      "question": "How could a team use hooks to improve safety in an agentic coding workflow?",
+      "options": [
+        "By disabling all validation",
+        "By running a check before risky operations, such as blocking commands that touch protected directories",
+        "By removing permission prompts",
+        "By storing secrets in hook files"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Hooks can enforce project rules automatically, such as blocking protected operations. They should strengthen safety, not weaken it or expose secrets."
+    },
+    {
+      "id": "ccdvf-t10-018",
+      "question": "Which configuration approach is most appropriate for sharing team-wide settings for Claude Code?",
+      "options": [
+        "Keeping every setting in one developer's local machine",
+        "Storing shared project settings in version-controlled configuration files, and personal overrides separately",
+        "Sharing settings by screenshot",
+        "Changing settings only in production"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Version-controlled shared settings keep the team consistent, while personal overrides avoid conflicts. Screenshots and local-only settings do not scale."
+    },
+    {
+      "id": "ccdvf-t10-019",
+      "question": "What is the best reason to connect an MCP server to Claude Code?",
+      "options": [
+        "To give Claude Code access to external tools and data sources through a standard protocol",
+        "To replace the project's test suite",
+        "To store the project's git history",
+        "To increase the model's context window"
+      ],
+      "correctAnswer": 1,
+      "explanation": "MCP servers extend Claude Code with external capabilities such as issue trackers or documentation. They do not replace tests, store history, or change the context window."
+    },
+    {
+      "id": "ccdvf-t10-020",
+      "question": "A team adds a third-party MCP server to Claude Code. What should they review first?",
+      "options": [
+        "Only its color scheme",
+        "Its permissions, the data it can access, and whether it comes from a trusted source",
+        "Its file size only",
+        "Nothing, since MCP servers are always safe"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Third-party servers can access data and take actions, so trust, permissions, and data scope must be reviewed. The other options do not address risk."
+    },
+    {
+      "id": "ccdvf-t10-021",
+      "question": "What does running Claude Code in non-interactive, scripted mode typically enable?",
+      "options": [
+        "Manual approval of every single keystroke",
+        "Running Claude Code as part of automation, such as scripts or CI pipelines, with a single prompt and captured output",
+        "Disabling the terminal",
+        "Replacing git"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Non-interactive mode supports automation by accepting a prompt and returning output for scripts or pipelines. It does not remove the need for permission design."
+    },
+    {
+      "id": "ccdvf-t10-022",
+      "question": "A team wants Claude Code to review pull requests automatically in CI. What is the most important safety consideration?",
+      "options": [
+        "Give the CI job full administrator access to all repositories",
+        "Scope the job's credentials and permissions narrowly, and ensure its output is reviewed by humans before merging",
+        "Allow it to merge its own changes automatically",
+        "Store the API key in the public repository"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Least privilege and human review of automated output limit risk. Unrestricted access, auto-merging, and public secrets are unsafe."
+    },
+    {
+      "id": "ccdvf-t10-023",
+      "question": "Why should a developer prefer a feature branch when letting an agent make significant changes?",
+      "options": [
+        "Branches prevent any testing",
+        "A separate branch isolates the changes, making review, testing, and rollback straightforward",
+        "Branches increase the number of tokens used",
+        "Branches are required only for images"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Isolated branches keep main stable and make changes reviewable and reversible. The other options misstate the benefit."
+    },
+    {
+      "id": "ccdvf-t10-024",
+      "question": "An agent reports that its change is complete, but the test suite fails. What is the best next step?",
+      "options": [
+        "Merge anyway, since the agent said it was complete",
+        "Treat the failing tests as the source of truth, investigate the failure, and fix it before considering the change done",
+        "Delete the failing tests",
+        "Disable the test runner"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Failing tests indicate the change is not finished. Investigating and fixing the issue is the right approach. Deleting or disabling tests hides the problem."
+    },
+    {
+      "id": "ccdvf-t10-025",
+      "question": "Why is it important to review generated code for security issues, even when tests pass?",
+      "options": [
+        "Passing tests guarantee security",
+        "Tests check specified behavior but may not cover security risks such as injection, unsafe defaults, or leaked secrets",
+        "Security review is only for compiled languages",
+        "Security issues cannot exist in generated code"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Tests verify expected behavior, not every security property. Targeted review or scanning is needed to catch vulnerabilities and secrets."
+    },
+    {
+      "id": "ccdvf-t10-026",
+      "question": "A developer asks Claude Code to refactor a module. What is the best way to scope the request?",
+      "options": [
+        "Ask it to rewrite the entire repository in a different language",
+        "Specify the module, the goal, the constraints such as preserving public interfaces, and the tests that must pass",
+        "Ask it to improve everything it can find",
+        "Give no details and hope for the best"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Clear scope, goals, and constraints produce focused, reviewable changes. Vague or sweeping requests increase risk and make review difficult."
+    },
+    {
+      "id": "ccdvf-t10-027",
+      "question": "Claude Code's proposed change deletes a file that the developer believes is still needed. What should happen next?",
+      "options": [
+        "Accept the deletion automatically",
+        "Reject or revise the change, explain the concern, and confirm the intended outcome before proceeding",
+        "Restore the file by guessing its contents",
+        "Ignore the deletion"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Destructive changes should be reviewed and corrected before they proceed. Guessing contents or ignoring the issue risks data loss."
+    },
+    {
+      "id": "ccdvf-t10-028",
+      "question": "Why should developers avoid pasting real production credentials into a Claude Code session?",
+      "options": [
+        "Credentials are only sensitive in email",
+        "Sensitive values can end up in logs, transcripts, or shared context, so secrets should be referenced through secure mechanisms instead",
+        "Credentials cannot be pasted at all",
+        "Pasting credentials improves code quality"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Secrets in conversations can persist in logs or be exposed unintentionally. Using environment variables or secret managers reduces that risk."
+    },
+    {
+      "id": "ccdvf-t10-029",
+      "question": "A codebase has many files that Claude Code should not read or modify, such as generated artifacts or secret files. What is the best practice?",
+      "options": [
+        "Give Claude Code unrestricted access to everything",
+        "Configure ignore rules and permission restrictions so protected files are excluded",
+        "Rename the protected files to avoid detection",
+        "Store secrets in those files and hope"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Ignore and permission rules keep sensitive or generated files out of scope. Renaming or relying on obscurity is not a control."
+    },
+    {
+      "id": "ccdvf-t10-030",
+      "question": "What is the most useful information to include when reporting a bug in a Claude Code workflow?",
+      "options": [
+        "Only a screenshot of the terminal with no context",
+        "The steps to reproduce, the expected and actual behavior, and relevant logs with sensitive data removed",
+        "A request to fix it immediately without details",
+        "Nothing, since bugs fix themselves"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Reproducible steps, expected versus actual behavior, and sanitized logs allow efficient diagnosis. Vague reports slow resolution."
+    },
+    {
+      "id": "ccdvf-t10-031",
+      "question": "What is the main advantage of giving Claude Code a clear definition of done?",
+      "options": [
+        "It makes Claude stop working immediately",
+        "It gives the agent measurable criteria, such as passing tests and meeting specific requirements, to determine completion",
+        "It removes the need for review",
+        "It changes the billing rate"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Explicit completion criteria make results verifiable and reduce premature or ambiguous outcomes. The other options misstate the effect."
+    },
+    {
+      "id": "ccdvf-t10-032",
+      "question": "A team wants Claude Code to follow a specific coding style automatically after each edit. Which mechanism is most suitable?",
+      "options": [
+        "Asking Claude to remember it from a previous session only",
+        "Configuring an automated formatter or linter that runs as part of the workflow",
+        "Manually reformatting everything each week",
+        "Changing the model's temperature"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Automated formatters and linters enforce style consistently and run reliably. Memory of past sessions is not dependable, and temperature does not enforce style."
+    },
+    {
+      "id": "ccdvf-t10-033",
+      "question": "Why should a team be cautious about giving an agent access to production databases from a developer machine?",
+      "options": [
+        "Production databases never contain important data",
+        "Mistakes or misuse could affect live data, so access should be limited, and development should use safe test environments",
+        "Production databases cannot be accessed by tools",
+        "Development machines are always more secure"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Live data carries high risk, so agents should work against non-production environments by default. Production access requires strict controls."
+    },
+    {
+      "id": "ccdvf-t10-034",
+      "question": "A developer notices that Claude Code keeps repeating a mistake that the team already corrected. What is the best fix?",
+      "options": [
+        "Accept the repetition as unavoidable",
+        "Record the correction in the project's CLAUDE.md so future sessions receive the guidance",
+        "Delete the project",
+        "Raise temperature"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Recording durable guidance in project instructions prevents repeated mistakes across sessions. Other sessions do not retain learning automatically."
+    },
+    {
+      "id": "ccdvf-t10-035",
+      "question": "Which statement about context in Claude Code is most accurate?",
+      "options": [
+        "Context is unlimited and never needs management",
+        "Long sessions accumulate context, so keeping tasks focused, using subagents, and clearing unrelated history helps quality",
+        "Context only matters for images",
+        "Context has no effect on answer quality"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Accumulated context can dilute focus and increase cost. Managing scope and context improves results, and the window is finite."
+    },
+    {
+      "id": "ccdvf-t10-036",
+      "question": "A developer wants to understand how a function is used across a large repository before changing it. What is a good approach?",
+      "options": [
+        "Change the function first and see what breaks",
+        "Ask Claude Code to search for references and summarize call sites before making any edit",
+        "Delete the function",
+        "Rename all files"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Investigating call sites first reduces the chance of breaking dependent code. Editing blindly invites regressions."
+    },
+    {
+      "id": "ccdvf-t10-037",
+      "question": "Which practice best supports a healthy human review process for agent-generated pull requests?",
+      "options": [
+        "Skipping review because the agent is reliable",
+        "Keeping changes small and focused, with clear descriptions and passing tests, so reviewers can evaluate them effectively",
+        "Combining many unrelated changes into one large pull request",
+        "Hiding the agent's involvement from reviewers"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Small, focused, well-described changes are easier to review thoroughly. Skipping review or hiding involvement undermines accountability."
+    },
+    {
+      "id": "ccdvf-t10-038",
+      "question": "Why is it important to disclose to reviewers that a change was produced with AI assistance, according to team policy?",
+      "options": [
+        "Disclosure is never relevant",
+        "Reviewers can apply appropriate scrutiny, and transparency supports accountability and team standards",
+        "Disclosure changes the code's behavior",
+        "Disclosure replaces testing"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Transparency helps reviewers calibrate their review and supports accountability. It does not change code behavior or replace testing."
+    },
+    {
+      "id": "ccdvf-t10-039",
+      "question": "What is the purpose of a dry run or preview when an agent performs a bulk operation?",
+      "options": [
+        "To apply the changes faster",
+        "To show what would change before applying it, so humans can verify the scope and intent",
+        "To delete the logs",
+        "To skip permissions"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Previews reveal the scope of bulk changes before they happen, which reduces accidental damage. They do not speed up or bypass controls."
+    },
+    {
+      "id": "ccdvf-t10-040",
+      "question": "A team's agent-generated code passes tests but causes a performance regression in production. What is the most useful follow-up?",
+      "options": [
+        "Ignore it, since tests passed",
+        "Add performance checks or benchmarks for critical paths and include them in the verification process",
+        "Remove performance monitoring",
+        "Increase the server's memory without analysis"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Adding relevant performance checks closes a gap in verification. Ignoring the regression or masking it with resources does not address the cause."
+    },
+    {
+      "id": "ccdvf-t10-041",
+      "question": "Which statement about Claude Code and version control is most accurate?",
+      "options": [
+        "Version control is unnecessary when using an agent",
+        "Version control provides history, diffs, and rollback, which are essential for reviewing and undoing agent changes",
+        "Version control prevents all errors",
+        "Version control replaces tests"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Version control makes changes traceable and reversible. It does not prevent errors or replace testing."
+    },
+    {
+      "id": "ccdvf-t10-042",
+      "question": "When Claude Code is used on a shared team repository, what is the best practice for project instructions?",
+      "options": [
+        "Keep instructions private on one developer's laptop",
+        "Commit shared project instructions to version control so the whole team receives consistent guidance",
+        "Store them in the commit message only",
+        "Email them each sprint"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Version-controlled instructions are shared, reviewable, and consistent across the team. Local-only or ad hoc sharing causes drift."
+    },
+    {
+      "id": "ccdvf-t10-043",
+      "question": "A developer wants to limit Claude Code to read-only exploration for a code audit. What is the best approach?",
+      "options": [
+        "Trust the developer not to ask for edits",
+        "Use permission settings that prevent file modifications and state the read-only intent clearly",
+        "Delete the write permissions from the operating system for everyone",
+        "Ask Claude to promise not to edit"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Permission settings enforce the constraint, while instructions support it. Relying only on promises or trust is not a control."
+    },
+    {
+      "id": "ccdvf-t10-044",
+      "question": "Which setup best supports reproducible agent-driven builds in CI?",
+      "options": [
+        "Using a different environment each run with no configuration",
+        "Pinning tool and dependency versions and defining the build environment explicitly",
+        "Running builds on a developer's personal machine only",
+        "Ignoring build logs"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Pinned versions and explicit environments make builds repeatable. Variable environments produce inconsistent results."
+    },
+    {
+      "id": "ccdvf-t10-045",
+      "question": "Why should a team review the tools and MCP servers a developer has enabled before a shared project relies on them?",
+      "options": [
+        "Tools have no effect on the project",
+        "Enabled tools determine what actions and data access are possible, so shared configuration should be deliberate",
+        "Tools are only relevant to designers",
+        "Reviews are required only for billing"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Tools define the actions available to agents, which affects security and reliability. Deliberate, reviewed configuration keeps the project safe and consistent."
+    },
+    {
+      "id": "ccdvf-t10-046",
+      "question": "A developer uses Claude Code to generate boilerplate code for a new service. Which step is most important before committing it?",
+      "options": [
+        "Commit immediately without reading",
+        "Read the generated code, confirm it follows team standards, and run the tests",
+        "Remove all comments",
+        "Rename the service at random"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Reading and testing generated code confirms it fits the project and works as intended. Committing unreviewed boilerplate spreads errors."
+    },
+    {
+      "id": "ccdvf-t10-047",
+      "question": "A team wants to ensure that agent-generated database migrations are safe. Which practice is most appropriate?",
+      "options": [
+        "Run migrations directly on production without review",
+        "Review migrations carefully, test them on a non-production copy, and have a rollback plan",
+        "Skip migrations and store data in memory",
+        "Let the agent choose the timing"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Migrations can permanently change data, so review, rehearsal, and rollback planning are essential. Direct production runs without review are high risk."
+    },
+    {
+      "id": "ccdvf-t10-048",
+      "question": "What does it mean to treat agent output as a draft?",
+      "options": [
+        "The output is always incorrect",
+        "The output is a starting point that must be reviewed, tested, and approved before it is relied upon",
+        "The output must be discarded",
+        "The output is only for personal use"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Treating output as a draft keeps human judgment in the loop and ensures verification before use. It does not mean the output is worthless."
+    },
+    {
+      "id": "ccdvf-t10-049",
+      "question": "Why is it useful to ask Claude Code to explain its reasoning or plan for a non-trivial change?",
+      "options": [
+        "Explanations are never useful",
+        "Explanations make assumptions visible, so reviewers can catch misunderstandings before code is written",
+        "Explanations replace tests",
+        "Explanations change the code's behavior"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Visible reasoning helps reviewers evaluate assumptions and catch errors early. It supplements, rather than replaces, testing."
+    },
+    {
+      "id": "ccdvf-t10-050",
+      "question": "A team's CI job uses an agent to triage new issues. What is the best safeguard against a misclassified issue causing harm?",
+      "options": [
+        "Let the agent close issues automatically without review",
+        "Have the agent label or suggest actions, with humans confirming before closing or changing priorities",
+        "Give the agent admin rights to all projects",
+        "Remove the issue tracker"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Suggestions with human confirmation limit the impact of misclassification. Automatic closing and broad admin rights increase risk."
+    },
+    {
+      "id": "ccdvf-t10-051",
+      "question": "Which factor most influences how much autonomy to give Claude Code on a given task?",
+      "options": [
+        "The number of stars on the repository",
+        "The risk and reversibility of the task, and how well it can be verified",
+        "The developer's favorite editor",
+        "The length of the README"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Autonomy should match the consequences of errors and the ability to verify results. Surface features do not determine appropriate autonomy."
+    },
+    {
+      "id": "ccdvf-t10-052",
+      "question": "A developer wants Claude Code to follow an unfamiliar framework's conventions. What is the most effective preparation?",
+      "options": [
+        "Ask it to guess the conventions",
+        "Provide the relevant documentation or examples, and state the conventions in the project instructions",
+        "Use the newest version without checking",
+        "Skip documentation entirely"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Supplying authoritative documentation and explicit conventions produces more accurate code. Guessing or using unverified versions increases errors."
+    },
+    {
+      "id": "ccdvf-t10-053",
+      "question": "Why should a developer check which version of a dependency an agent has chosen to add to a project?",
+      "options": [
+        "Versions never affect behavior",
+        "Dependencies affect security, compatibility, and licensing, so choices should be reviewed and pinned appropriately",
+        "Dependency versions are only relevant to documentation",
+        "Only the latest version is ever safe"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Dependency choices have security and compatibility consequences. Reviewing and pinning them keeps builds reliable and safe."
+    },
+    {
+      "id": "ccdvf-t10-054",
+      "question": "What is the best description of a developer's responsibility when using an AI coding agent?",
+      "options": [
+        "The agent is fully responsible for all outcomes",
+        "The developer remains responsible for reviewing, testing, and approving what ships",
+        "Nobody is responsible if the agent makes a mistake",
+        "Responsibility belongs to the model provider only"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Humans remain accountable for what enters the codebase and reaches users. Agents assist, but they do not remove human responsibility."
+    },
+    {
+      "id": "ccdvf-t10-055",
+      "question": "A team member wants to use Claude Code on a personal fork of a company project that contains proprietary code. What is the most important consideration?",
+      "options": [
+        "There are no policies relevant to proprietary code",
+        "They should follow the organization's policies on data handling and the use of AI tools with proprietary code",
+        "Proprietary code can always be shared freely",
+        "Forks are exempt from all policies"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Organizational policies govern where proprietary code can be processed and how it is handled. Ignoring them creates legal and security risk."
+    },
+    {
+      "id": "ccdvf-t10-056",
+      "question": "Why is it helpful to break a large feature into smaller tasks when working with Claude Code?",
+      "options": [
+        "Smaller tasks are always slower overall",
+        "Smaller tasks are easier to verify, review, and roll back, and they keep the agent's context focused",
+        "Smaller tasks remove the need for tests",
+        "Smaller tasks use no tokens"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Incremental tasks improve verification, reviewability, and focus. They generally reduce risk rather than adding it."
+    },
+    {
+      "id": "ccdvf-t10-057",
+      "question": "A developer notices Claude Code has modified a configuration file that controls deployment behavior, even though the task was about the user interface. What is the best response?",
+      "options": [
+        "Accept the change without reading it",
+        "Review the unexpected change, revert it if it is out of scope, and tighten the task's boundaries",
+        "Deploy immediately to see if it works",
+        "Ignore it because the interface still works"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Out-of-scope changes to deployment configuration are risky. Reverting them and clarifying scope prevents unintended impact."
+    },
+    {
+      "id": "ccdvf-t10-058",
+      "question": "What is the main benefit of a team sharing reusable prompts or workflows for common development tasks?",
+      "options": [
+        "It eliminates the need for review",
+        "It improves consistency and quality across the team and reduces repeated effort",
+        "It removes the need for version control",
+        "It changes the model's knowledge cutoff"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Shared, tested workflows make results more consistent and save effort. They do not remove review or affect the model's training data."
+    },
+    {
+      "id": "ccdvf-t10-059",
+      "question": "Which approach best reflects safe use of Claude Code for debugging a production incident?",
+      "options": [
+        "Give it unrestricted production access and let it fix things directly",
+        "Use read-only access to logs and diagnostic data where possible, propose changes for review, and apply fixes through the normal controlled process",
+        "Turn off monitoring to reduce noise",
+        "Share production credentials in the chat"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Read-only diagnosis and controlled change management reduce risk during incidents. Unrestricted access and shared credentials create new problems."
+    },
+    {
+      "id": "ccdvf-t10-060",
+      "question": "Which description best matches a production-ready use of Claude Code in a development team?",
+      "options": [
+        "Let the agent work unsupervised with broad permissions and merge everything automatically",
+        "Use clear project instructions committed to version control, scoped tasks, least-privilege permissions, version control with reviewed diffs, automated tests and checks, human review before merging, and secrets kept out of prompts and files",
+        "Avoid tests because the agent writes correct code",
+        "Share credentials freely so the agent is never blocked"
+      ],
+      "correctAnswer": 2,
+      "explanation": "A mature workflow combines shared instructions, scoped tasks, least privilege, reviewable changes, automated verification, human approval, and secret hygiene. The other options each remove essential safeguards."
+    }
+  ]
+}
