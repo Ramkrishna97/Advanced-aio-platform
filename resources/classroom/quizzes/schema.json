@@ -8,7 +8,8 @@
       "id": "optional-stable-question-id",
       "question": "Question text",
       "options": ["First answer", "Second answer", "Third answer", "Fourth answer"],
-      "correctAnswer": 0
+      "correctAnswer": 0,
+      "explanation": "Explanation text"
     }
   ]
 }
