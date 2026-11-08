@@ -1,0 +1,728 @@
+{
+  "schemaVersion": 1,
+  "subject": "Claude Certified Developer - Foundations (CCDV-F)",
+  "topicId": 6,
+  "topic": "Cost and Performance: Caching, Batching, Model Selection, and Token Management",
+  "questionnaires": [
+    {
+      "id": "ccdvf-t6-001",
+      "question": "Which two components of a request are billed as tokens?",
+      "options": [
+        "Only the output tokens",
+        "Input tokens and output tokens",
+        "Only the system prompt",
+        "Only tool results"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Both input tokens and output tokens are billed. Billing is not limited to output or to any single part of the input."
+    },
+    {
+      "id": "ccdvf-t6-002",
+      "question": "Compared with input tokens, how are output tokens generally priced?",
+      "options": [
+        "They are free",
+        "They are typically priced higher than input tokens",
+        "They are priced identically",
+        "They are priced only during streaming"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Output tokens generally cost more than input tokens. Check current pricing for exact rates."
+    },
+    {
+      "id": "ccdvf-t6-003",
+      "question": "What is the main purpose of prompt caching?",
+      "options": [
+        "To store the user's password securely",
+        "To reuse a stable prompt prefix across requests, reducing cost and latency for repeated content",
+        "To increase the context window",
+        "To change the model's temperature"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Prompt caching reuses processing for a repeated, stable prefix such as a long system prompt or reference document. It does not store credentials, expand the context window, or alter sampling."
+    },
+    {
+      "id": "ccdvf-t6-004",
+      "question": "Where is cache_control placed to mark a block of content for caching?",
+      "options": [
+        "In an HTTP cookie",
+        "On the content block that ends the reusable prefix",
+        "In the stop_sequences list",
+        "In the usage field of the response"
+      ],
+      "correctAnswer": 2,
+      "explanation": "cache_control is attached to the content block marking the end of the cacheable prefix. The other locations are not used for this purpose."
+    },
+    {
+      "id": "ccdvf-t6-005",
+      "question": "Why must the cacheable content usually appear early in the prompt?",
+      "options": [
+        "Caching only works on the last token",
+        "Caching matches a prefix, so anything that changes early in the prompt breaks the cache for what follows",
+        "Early placement doubles the cost",
+        "Early placement disables streaming"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Prefix caching requires the stable content to be identical from the start. Variable content placed early invalidates the cache for everything after it."
+    },
+    {
+      "id": "ccdvf-t6-006",
+      "question": "A developer adds a timestamp to the beginning of a long, otherwise static system prompt, and the cache never hits. What is the likely reason?",
+      "options": [
+        "Timestamps are not allowed in prompts",
+        "The timestamp changes on every request, so the prefix is never identical",
+        "Caching is disabled for system prompts",
+        "The model ignores timestamps"
+      ],
+      "correctAnswer": 2,
+      "explanation": "A changing value at the start of the prefix makes each request's prefix different, so cached content cannot be reused. Moving dynamic values to the end of the prompt usually fixes this."
+    },
+    {
+      "id": "ccdvf-t6-007",
+      "question": "Which change is most likely to improve cache effectiveness for a support chatbot with a large static knowledge base?",
+      "options": [
+        "Randomizing the order of documents each request",
+        "Keeping the knowledge base and instructions identical and stable across requests",
+        "Changing the system prompt for every user",
+        "Increasing temperature on each call"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Stable, identical content is what caching depends on. Randomizing order or changing instructions per request prevents reuse."
+    },
+    {
+      "id": "ccdvf-t6-008",
+      "question": "How do cache reads generally compare with uncached input processing in cost?",
+      "options": [
+        "Cache reads are generally cheaper than standard input processing",
+        "Cache reads are always more expensive",
+        "Cache reads cost the same as output tokens",
+        "Cache reads are free of charge in all cases"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Reading from the cache is generally priced below standard input, which is the source of savings. Check current pricing for exact rates."
+    },
+    {
+      "id": "ccdvf-t6-009",
+      "question": "What is the Message Batches API designed for?",
+      "options": [
+        "Real-time chat with streamed replies",
+        "Asynchronous processing of large volumes of requests where results need not be immediate",
+        "Interactive voice conversations",
+        "Storing conversation history permanently"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Batches are submitted together and processed asynchronously, which suits bulk workloads. Real-time interaction is better served by standard streaming requests."
+    },
+    {
+      "id": "ccdvf-t6-010",
+      "question": "What is a key cost advantage of the Message Batches API for suitable workloads?",
+      "options": [
+        "Batch requests are billed at a discounted rate compared with standard synchronous requests",
+        "Batch requests are free",
+        "Batches increase the context window",
+        "Batches remove the need for max_tokens"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Batch processing is offered at a discounted rate in exchange for asynchronous results. The other options misstate its benefits."
+    },
+    {
+      "id": "ccdvf-t6-011",
+      "question": "Which workload is the best fit for batch processing rather than synchronous calls?",
+      "options": [
+        "A live chat assistant that needs an immediate reply",
+        "Nightly classification of tens of thousands of archived documents",
+        "A voice agent responding within a conversation",
+        "A keystroke-level autocomplete feature"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Large overnight jobs tolerate delayed results and benefit from batch pricing. Interactive features require low latency and fit synchronous calls."
+    },
+    {
+      "id": "ccdvf-t6-012",
+      "question": "Why does model selection affect cost and performance?",
+      "options": [
+        "Every model has identical cost and speed",
+        "Smaller, faster models generally cost less and respond sooner, while larger models may offer more capability",
+        "Larger models are always cheaper",
+        "Model choice has no effect on latency"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Models differ in capability, speed, and price. Matching the model to the task balances quality against cost and latency."
+    },
+    {
+      "id": "ccdvf-t6-013",
+      "question": "A team uses the most capable model for every task, including simple formatting and classification. What is the best recommendation?",
+      "options": [
+        "Keep using it, since the capable model is always optimal",
+        "Evaluate smaller models on these tasks and route simple work to them if quality is acceptable",
+        "Remove the model and use regular expressions only in every case",
+        "Increase max_tokens to compensate"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Routing simpler tasks to faster, cheaper models can reduce cost without hurting quality, provided evaluation confirms acceptable results."
+    },
+    {
+      "id": "ccdvf-t6-014",
+      "question": "What is model routing in this context?",
+      "options": [
+        "Sending all requests to one fixed model",
+        "Directing requests to different models based on task complexity, cost, or latency needs",
+        "Changing the API endpoint URL for each request",
+        "Caching model weights on disk"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Routing chooses an appropriate model per request. It is a design strategy to balance quality with cost and speed."
+    },
+    {
+      "id": "ccdvf-t6-015",
+      "question": "How does max_tokens affect cost?",
+      "options": [
+        "It has no effect on cost",
+        "It caps the output length, which in turn limits the maximum output tokens billed for a response",
+        "It increases input token billing",
+        "It makes all responses free"
+      ],
+      "correctAnswer": 2,
+      "explanation": "max_tokens limits how many output tokens can be generated, so it bounds output cost. It does not change input billing."
+    },
+    {
+      "id": "ccdvf-t6-016",
+      "question": "Which practice reduces cost when the answer only needs a short result?",
+      "options": [
+        "Requesting long, detailed explanations by default",
+        "Asking for concise output and setting max_tokens to a reasonable limit",
+        "Raising temperature to shorten output",
+        "Removing instructions about format"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Concise instructions and sensible limits reduce output tokens. Temperature does not control length, and removing format guidance often increases verbosity."
+    },
+    {
+      "id": "ccdvf-t6-017",
+      "question": "A system prompt of several thousand tokens is sent with every request. What is the most effective cost-reduction approach?",
+      "options": [
+        "Keep the prompt as large as possible for safety",
+        "Trim unnecessary text, remove redundancy, and cache the stable portion",
+        "Repeat the prompt twice for reliability",
+        "Move the prompt into every user message"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Reducing redundant text lowers input tokens on every call, and caching avoids reprocessing the stable part. Expanding or duplicating the prompt increases cost."
+    },
+    {
+      "id": "ccdvf-t6-018",
+      "question": "In a long multi-turn chat, the entire conversation history is resent on each turn. What is the main cost concern?",
+      "options": [
+        "History is free to resend",
+        "Input tokens grow with each turn, increasing cost and latency over time",
+        "History reduces output tokens to zero",
+        "History is only billed once"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Resending history adds input tokens every turn, so costs grow as conversations lengthen. Summarizing or trimming older turns helps control this."
+    },
+    {
+      "id": "ccdvf-t6-019",
+      "question": "What is a reasonable strategy for managing long conversation history?",
+      "options": [
+        "Never trim anything",
+        "Summarize older turns and keep recent turns verbatim, preserving information the task needs",
+        "Delete the most recent turns",
+        "Send only the first message each time"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Summaries plus recent verbatim turns preserve key context while reducing tokens. Deleting recent turns or sending only the first message loses needed information."
+    },
+    {
+      "id": "ccdvf-t6-020",
+      "question": "Why is counting tokens before sending a request useful for cost management?",
+      "options": [
+        "It changes the model's output",
+        "It allows applications to estimate cost and enforce limits or trimming before calling the API",
+        "It replaces the need for max_tokens",
+        "It enables streaming"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Token counting helps teams estimate cost and decide whether to trim input before sending. It does not change outputs, replace limits, or enable streaming."
+    },
+    {
+      "id": "ccdvf-t6-021",
+      "question": "Which factor most directly affects time to first token in a streamed response?",
+      "options": [
+        "The color of the user interface",
+        "The size of the input and the model being used",
+        "The number of API keys",
+        "The length of the user's name"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Longer inputs and larger models generally take longer to begin responding. The other factors are unrelated to model processing time."
+    },
+    {
+      "id": "ccdvf-t6-022",
+      "question": "How does streaming affect perceived performance?",
+      "options": [
+        "It makes the total generation time shorter in every case",
+        "It lets users see output sooner, improving perceived responsiveness even if total time is similar",
+        "It removes the need for timeouts",
+        "It reduces the input tokens"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Streaming improves perceived latency by showing content progressively. Total generation time may be similar, and streaming does not change token counts."
+    },
+    {
+      "id": "ccdvf-t6-023",
+      "question": "An application needs several independent answers produced as quickly as possible. What is an effective approach?",
+      "options": [
+        "Process them one at a time in sequence",
+        "Run independent requests concurrently within rate-limit constraints",
+        "Combine them into one enormous prompt",
+        "Use the largest possible max_tokens for each"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Independent requests can run in parallel, reducing total wall-clock time, as long as concurrency respects rate limits. Sequential processing or one oversized prompt is slower or less reliable."
+    },
+    {
+      "id": "ccdvf-t6-024",
+      "question": "Which change most directly reduces latency for an interactive feature?",
+      "options": [
+        "Using a larger model with longer outputs",
+        "Reducing unnecessary input tokens and choosing a faster model where quality allows",
+        "Increasing max_tokens",
+        "Adding more retries before responding"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Less input and a faster model reduce processing time. Longer outputs and extra retries increase latency."
+    },
+    {
+      "id": "ccdvf-t6-025",
+      "question": "A developer asks for a structured result, but the model adds long introductions and closing remarks every time. What is the most effective fix?",
+      "options": [
+        "Increase temperature",
+        "Specify the exact output format and tell the model to omit extra commentary",
+        "Remove the format entirely",
+        "Double max_tokens"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Explicit format instructions cut unnecessary output tokens and speed up responses. Other changes do not directly control verbosity."
+    },
+    {
+      "id": "ccdvf-t6-026",
+      "question": "Which strategy reduces repeated cost for identical user questions across many users?",
+      "options": [
+        "Sending each question to the model with no caching",
+        "Caching application-level responses for identical inputs where freshness and privacy allow",
+        "Raising temperature so answers differ",
+        "Disabling validation"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Application-level caching avoids repeated model calls for identical inputs. It must respect freshness requirements and privacy constraints, such as not caching personal data inappropriately."
+    },
+    {
+      "id": "ccdvf-t6-027",
+      "question": "Why must an application consider privacy before caching model responses?",
+      "options": [
+        "Caching never involves personal data",
+        "Cached responses may contain personal or sensitive information that must be protected and expired appropriately",
+        "Caching disables encryption",
+        "Caching is required by the API"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Cached content can contain sensitive data, so retention, access control, and expiration must be designed deliberately. The other options misstate the risk."
+    },
+    {
+      "id": "ccdvf-t6-028",
+      "question": "A retrieval pipeline sends 50 document chunks per query, but only 5 are relevant. What is the cost impact?",
+      "options": [
+        "None, since irrelevant chunks are free",
+        "Unnecessary input tokens increase cost and can dilute answer quality",
+        "Irrelevant chunks reduce output tokens to zero",
+        "It only affects latency, not cost"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Irrelevant chunks add billable input tokens and can distract the model. Better retrieval and filtering reduce both cost and noise."
+    },
+    {
+      "id": "ccdvf-t6-029",
+      "question": "What is the most effective way to improve retrieval efficiency in a RAG system?",
+      "options": [
+        "Send the entire knowledge base with every query",
+        "Retrieve a focused set of highly relevant chunks and tune the number returned",
+        "Remove retrieval and rely on memory",
+        "Set max_tokens to zero"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Focused retrieval keeps input small and relevant. Sending the entire knowledge base is expensive and slow, and removing retrieval defeats grounding."
+    },
+    {
+      "id": "ccdvf-t6-030",
+      "question": "A long reference document is needed for many different user questions over one session. Which approach is most cost-effective?",
+      "options": [
+        "Re-send the full document uncached for every question",
+        "Cache the document as a stable prefix so it is processed once and reused",
+        "Split the document into single words",
+        "Avoid using the document at all"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Caching a stable large prefix avoids repeated processing of the same document. Re-sending it uncached is more expensive."
+    },
+    {
+      "id": "ccdvf-t6-031",
+      "question": "Which metric is most useful for tracking the cost of an application over time?",
+      "options": [
+        "The number of developer meetings",
+        "Token usage per feature or endpoint, broken down into input and output",
+        "The number of icons in the interface",
+        "The length of the README"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Breaking down token usage by feature and by input or output reveals where costs originate. The other metrics do not reflect spending."
+    },
+    {
+      "id": "ccdvf-t6-032",
+      "question": "A team's monthly spend spikes unexpectedly. What is the best first investigation step?",
+      "options": [
+        "Immediately switch to the largest model",
+        "Review token usage by feature, endpoint, and recent changes to prompts or traffic",
+        "Remove all logging",
+        "Increase max_tokens across the board"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Attribution by feature and recent changes identifies the likely cause, such as a prompt that grew or a loop that repeats calls. Guessing or making broad changes can make things worse."
+    },
+    {
+      "id": "ccdvf-t6-033",
+      "question": "Which factor can cause an agent to consume far more tokens than expected?",
+      "options": [
+        "Using a short system prompt",
+        "A loop that repeatedly calls tools or the model without a limit",
+        "Setting temperature to 0.2",
+        "Using one tool"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Unbounded loops compound token usage with each iteration. Iteration limits and budgets prevent runaway cost."
+    },
+    {
+      "id": "ccdvf-t6-034",
+      "question": "What is a sound practice for controlling spend in an agentic application?",
+      "options": [
+        "No limits, so the agent can finish any task",
+        "Set iteration limits and per-task token or cost budgets, with alerts for unusual usage",
+        "Allow unlimited tool calls",
+        "Disable monitoring"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Budgets and iteration limits cap runaway usage, and alerts flag anomalies. The other options remove the guardrails needed for cost control."
+    },
+    {
+      "id": "ccdvf-t6-035",
+      "question": "A tool returns a very large JSON payload that is inserted into the conversation every turn. What is the best optimization?",
+      "options": [
+        "Insert the full payload every turn regardless of need",
+        "Return only the fields needed for the task and summarize large results",
+        "Convert it to binary to save tokens",
+        "Repeat it twice for accuracy"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Trimming tool output to relevant fields reduces tokens and noise. Binary conversion does not help, since the model reads text, and repeating data adds cost."
+    },
+    {
+      "id": "ccdvf-t6-036",
+      "question": "Why might a developer choose a smaller model for a high-volume classification task?",
+      "options": [
+        "Smaller models are always more accurate",
+        "Lower cost and latency at scale can outweigh small quality differences, if evaluation confirms acceptable accuracy",
+        "Classification requires the largest model",
+        "Smaller models cannot classify text"
+      ],
+      "correctAnswer": 2,
+      "explanation": "At high volume, cost and latency savings can be significant. The choice should be validated by evaluation against accuracy requirements."
+    },
+    {
+      "id": "ccdvf-t6-037",
+      "question": "What does it mean to evaluate the cost-quality trade-off when choosing a model?",
+      "options": [
+        "Ignoring quality and optimizing only for cost",
+        "Measuring output quality on representative tasks alongside cost and latency to select the best fit",
+        "Choosing the most expensive model for safety",
+        "Selecting models at random"
+      ],
+      "correctAnswer": 2,
+      "explanation": "A proper trade-off uses measured quality on realistic tasks alongside cost and latency. Optimizing only one dimension leads to poor decisions."
+    },
+    {
+      "id": "ccdvf-t6-038",
+      "question": "Which factor generally increases the cost of processing a single very long document?",
+      "options": [
+        "Its length in input tokens",
+        "The color of the document's font",
+        "The file name",
+        "The author's age"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Input cost grows with the number of input tokens. The other factors do not affect token billing."
+    },
+    {
+      "id": "ccdvf-t6-039",
+      "question": "Which approach helps when a document is too long to fit a single request but must still be processed?",
+      "options": [
+        "Send only the last sentence",
+        "Split the document into chunks, process them, and combine results carefully",
+        "Increase temperature until it fits",
+        "Skip the document"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Chunking allows long material to be processed within limits, with results combined carefully. The other options either lose content or do not address the limit."
+    },
+    {
+      "id": "ccdvf-t6-040",
+      "question": "In a chunked summarization pipeline, why might the team combine chunk summaries in a second pass?",
+      "options": [
+        "To double the token count",
+        "To merge partial results into a coherent final summary that respects the whole document",
+        "To disable caching",
+        "To change the model's language"
+      ],
+      "correctAnswer": 2,
+      "explanation": "A second pass integrates partial summaries and resolves overlaps or gaps. Without it, the final output can be fragmented."
+    },
+    {
+      "id": "ccdvf-t6-041",
+      "question": "A workflow runs the same classification prompt on each row of a dataset. Which change would reduce cost the most without sacrificing results?",
+      "options": [
+        "Use the largest model with the longest output",
+        "Place the stable instructions and examples in a cached prefix and keep per-row content at the end",
+        "Include the entire dataset in each request",
+        "Increase temperature for each row"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Caching stable instructions and examples avoids reprocessing them for each row, while keeping variable data at the end preserves the cache. The other options increase cost."
+    },
+    {
+      "id": "ccdvf-t6-042",
+      "question": "Which statement about embeddings is accurate in terms of cost?",
+      "options": [
+        "Embeddings are always free",
+        "Embedding generation has its own cost, and embeddings should be computed once and stored for reuse when content does not change",
+        "Embeddings must be recomputed for every query on the same document",
+        "Embeddings replace the need for storage"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Computing embeddings costs resources, so storing them and reusing them for unchanged content is efficient. Recomputing them repeatedly wastes cost."
+    },
+    {
+      "id": "ccdvf-t6-043",
+      "question": "Why is it important to measure latency at percentiles, such as p95, rather than only the average?",
+      "options": [
+        "Averages hide slow outliers that users experience",
+        "Percentiles are required by the API",
+        "Averages are always more accurate",
+        "Percentiles measure billing"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Averages can look acceptable while a meaningful share of users experience slow responses. Percentiles reveal the tail behavior that matters."
+    },
+    {
+      "id": "ccdvf-t6-044",
+      "question": "A team wants faster responses for a user-facing feature. Which change is most likely to help without reducing quality?",
+      "options": [
+        "Raising max_tokens to allow longer outputs",
+        "Streaming the response so users see content sooner",
+        "Adding more sequential steps",
+        "Removing all validation"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Streaming improves perceived latency without changing the answer. Longer outputs and extra steps increase delay, and removing validation harms quality."
+    },
+    {
+      "id": "ccdvf-t6-045",
+      "question": "Which factor most often causes unnecessary cost in prompts over time?",
+      "options": [
+        "Prompt changes that add instructions and examples without removing outdated ones",
+        "Using concise instructions",
+        "Setting max_tokens",
+        "Caching stable content"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Prompts tend to grow as teams add instructions and examples without pruning. Periodic review removes redundancy and lowers cost."
+    },
+    {
+      "id": "ccdvf-t6-046",
+      "question": "A pipeline asks the model to return the full original document along with its summary. What is the main cost issue?",
+      "options": [
+        "It reduces output cost",
+        "It adds large output tokens that could be avoided by returning only the needed summary",
+        "It removes the need for input",
+        "It makes streaming impossible"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Echoing large content inflates output tokens without adding value. Asking only for what is needed reduces cost and latency."
+    },
+    {
+      "id": "ccdvf-t6-047",
+      "question": "Which approach is the best way to decide whether to use batch processing for a new workload?",
+      "options": [
+        "Batch everything regardless of latency needs",
+        "Assess whether results can tolerate asynchronous delivery, and whether the volume justifies batching",
+        "Only use batch for chat interfaces",
+        "Never use batch for any workload"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Batching fits workloads where delay is acceptable and volume is high. Matching the workload to the API mode is the right decision method."
+    },
+    {
+      "id": "ccdvf-t6-048",
+      "question": "A batch job fails for some items. What should the team do to limit wasted cost?",
+      "options": [
+        "Resubmit the entire batch, including items that succeeded",
+        "Identify and resubmit only the failed items, after fixing the underlying cause",
+        "Ignore the failures",
+        "Switch to synchronous calls for all items immediately"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Resubmitting only failed items avoids paying twice for successful work. Fixing the cause prevents the same failures from recurring."
+    },
+    {
+      "id": "ccdvf-t6-049",
+      "question": "Which pricing consideration is most relevant when choosing between a long context window approach and retrieval for a large corpus?",
+      "options": [
+        "Long context always costs nothing",
+        "Sending the whole corpus each time can be costly, while retrieval sends only relevant content, so each option has different cost profiles",
+        "Retrieval always increases cost more than sending everything",
+        "Context size has no cost impact"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Sending large corpora on every request is expensive, while retrieval limits input to relevant content. Each approach trades off cost, complexity, and quality, so the choice should be measured."
+    },
+    {
+      "id": "ccdvf-t6-050",
+      "question": "What is the best use of the token counting feature in production?",
+      "options": [
+        "Counting tokens only for debugging after a failure",
+        "Checking request size before sending to avoid errors and to trim input when necessary",
+        "Replacing max_tokens",
+        "Changing the model automatically"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Pre-checking request size prevents oversized requests and supports trimming decisions. It complements limits rather than replacing them."
+    },
+    {
+      "id": "ccdvf-t6-051",
+      "question": "A team notices that a few very large user inputs drive most of their cost. What is a sensible response?",
+      "options": [
+        "Ignore it, since averages look fine",
+        "Set input size policies, trim or chunk large inputs, and monitor the distribution of input sizes",
+        "Remove all user inputs",
+        "Switch to the largest model"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Outliers can dominate cost, so limits, chunking, and distribution monitoring address the cause. Ignoring them or switching models does not target the problem."
+    },
+    {
+      "id": "ccdvf-t6-052",
+      "question": "Which technique helps reduce the number of model calls in a multi-step workflow?",
+      "options": [
+        "Calling the model separately for every tiny sub-step even when they could be combined",
+        "Combining steps that are closely related into one well-structured request when quality is preserved",
+        "Calling the model for deterministic operations like arithmetic that code can handle",
+        "Repeating each call twice"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Combining related steps can reduce overhead when quality holds. Deterministic operations are better handled by code, which is cheaper and more reliable."
+    },
+    {
+      "id": "ccdvf-t6-053",
+      "question": "Why should deterministic tasks, such as sorting a list or computing a sum, usually be handled by code instead of the model?",
+      "options": [
+        "Models cannot process lists",
+        "Code is cheaper, faster, and more reliable for exact operations",
+        "The API forbids arithmetic",
+        "Code always produces slower results"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Exact operations are faster and more reliable in code, and they avoid model token costs. Using the model for them adds cost and risk of error."
+    },
+    {
+      "id": "ccdvf-t6-054",
+      "question": "A product team wants to forecast monthly API spend. Which inputs are most important?",
+      "options": [
+        "Only the team's favorite color",
+        "Expected request volume, average input and output tokens per request, and the model's pricing",
+        "Only the number of developers",
+        "Only the length of the product name"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Cost forecasting depends on volume, token profiles per request, and pricing. The other factors do not drive spend."
+    },
+    {
+      "id": "ccdvf-t6-055",
+      "question": "Why is it useful to set a budget or alert threshold for API spend?",
+      "options": [
+        "Budgets make responses more accurate",
+        "They detect unexpected usage early, such as a bug causing a retry storm",
+        "Budgets remove the need for monitoring",
+        "Budgets change the model automatically"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Alerts give early warning of anomalies that can quickly become costly. They complement monitoring and do not change model behavior."
+    },
+    {
+      "id": "ccdvf-t6-056",
+      "question": "An engineering team plans to increase the number of few-shot examples in a prompt used millions of times per month. What is the key consideration?",
+      "options": [
+        "Examples are free, so there is no cost impact",
+        "Each added example increases input tokens on every call, so the quality gain should be weighed against the added cost",
+        "Examples reduce output tokens to zero",
+        "Examples disable caching"
+      ],
+      "correctAnswer": 2,
+      "explanation": "At high volume, extra examples add significant cost. The benefit should be measured against the expense, and caching may reduce the impact."
+    },
+    {
+      "id": "ccdvf-t6-057",
+      "question": "Which practice improves performance when many users make similar requests at the same time?",
+      "options": [
+        "Processing each request in a single shared thread with no queuing",
+        "Using queues, bounded concurrency, and rate-limit-aware scheduling",
+        "Removing timeouts",
+        "Sending every request twice"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Queues and bounded concurrency smooth spikes and keep the system within limits. Single-threaded processing, removing timeouts, or duplicating requests create bottlenecks or waste."
+    },
+    {
+      "id": "ccdvf-t6-058",
+      "question": "A team wants to reduce the cost of repeated tool definitions sent on every request. What is an appropriate step?",
+      "options": [
+        "Remove all tools from every request",
+        "Keep tool definitions concise and, where supported, include them in a stable cached prefix",
+        "Duplicate them in the messages array",
+        "Add lengthy descriptions to each tool"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Concise definitions reduce tokens, and stable placement supports caching. Removing needed tools or lengthening descriptions does not help."
+    },
+    {
+      "id": "ccdvf-t6-059",
+      "question": "Which metric best reflects the efficiency of a feature that uses the model to answer questions?",
+      "options": [
+        "Number of code comments",
+        "Cost per successful answer, together with quality and latency measures",
+        "Number of logo variations",
+        "Total number of files in the repository"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Cost per successful outcome, paired with quality and latency, shows real efficiency. Counts of unrelated artifacts do not measure performance."
+    },
+    {
+      "id": "ccdvf-t6-060",
+      "question": "Which approach best describes a cost-conscious, performance-aware production design?",
+      "options": [
+        "Use the largest model everywhere and never measure usage",
+        "Right-size models, cache stable content, trim inputs and outputs, use batching where latency allows, stream interactive responses, and monitor spend by feature",
+        "Send entire datasets on every request for accuracy",
+        "Disable logging to save money"
+      ],
+      "correctAnswer": 2,
+      "explanation": "A balanced design matches models to tasks, reuses stable content, controls token volume, uses the right processing mode, and monitors results. The other options waste cost or remove visibility."
+    }
+  ]
+}
