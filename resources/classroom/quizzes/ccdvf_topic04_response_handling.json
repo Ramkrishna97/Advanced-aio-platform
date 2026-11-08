@@ -1,0 +1,488 @@
+{
+  "schemaVersion": 1,
+  "subject": "Claude Certified Developer - Foundations (CCDV-F)",
+  "topicId": 4,
+  "topic": "Response Handling: Streaming and Stop Reasons",
+  "questionnaires": [
+    {
+      "id": "ccdvf-t4-001",
+      "question": "Which streaming event opens a new message?",
+      "options": [
+        "message_start",
+        "content_block_stop",
+        "final_result",
+        "stream_end"
+      ],
+      "correctAnswer": 1,
+      "explanation": "message_start begins the streamed message. content_block_stop closes a single content block, and final_result and stream_end are not streaming event names."
+    },
+    {
+      "id": "ccdvf-t4-002",
+      "question": "Which streaming event carries incremental pieces of generated text?",
+      "options": [
+        "message_start",
+        "content_block_delta",
+        "ping",
+        "message_delta"
+      ],
+      "correctAnswer": 2,
+      "explanation": "content_block_delta events carry incremental text, such as text_delta payloads. ping is a keep-alive, and message_delta carries message-level updates."
+    },
+    {
+      "id": "ccdvf-t4-003",
+      "question": "When Claude streams the input arguments of a tool call, which delta type carries the partial JSON?",
+      "options": [
+        "text_delta",
+        "input_json_delta",
+        "image_delta",
+        "stop_reason"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Tool input arrives as partial JSON in input_json_delta events. The other options are not used for tool arguments."
+    },
+    {
+      "id": "ccdvf-t4-004",
+      "question": "Where are cumulative usage figures such as output token counts typically delivered in a stream?",
+      "options": [
+        "Only in message_start",
+        "In a message_delta event",
+        "In content_block_start",
+        "In ping events"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Message-level updates, including usage and the final stop_reason, arrive in message_delta events. message_start does not carry the final totals."
+    },
+    {
+      "id": "ccdvf-t4-005",
+      "question": "What does the message_stop event signal?",
+      "options": [
+        "The start of a content block",
+        "The end of the message stream",
+        "A tool call is being requested",
+        "An error has occurred"
+      ],
+      "correctAnswer": 2,
+      "explanation": "message_stop marks the end of the streamed message. It does not indicate the start of content, a tool call, or an error."
+    },
+    {
+      "id": "ccdvf-t4-006",
+      "question": "What is the purpose of ping events in a stream?",
+      "options": [
+        "They signal fatal errors that stop the stream",
+        "They are keep-alive events that can be safely ignored",
+        "They contain tool calls",
+        "They contain the final answer"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Ping events keep the connection alive and carry no content. They should be ignored rather than treated as errors or data."
+    },
+    {
+      "id": "ccdvf-t4-007",
+      "question": "An error event arrives in the middle of a stream. What is the correct handling?",
+      "options": [
+        "Ignore it and continue waiting indefinitely",
+        "Stop processing, clean up, and surface the error appropriately to the user or caller",
+        "Restart the stream silently forever",
+        "Convert it into a tool_use block"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Mid-stream errors should be handled explicitly, including cleanup and clear reporting. Ignoring them or restarting silently hides problems."
+    },
+    {
+      "id": "ccdvf-t4-008",
+      "question": "How should an application build the final text of a content block from streamed text deltas?",
+      "options": [
+        "Use only the last delta received",
+        "Concatenate the text deltas in order for each content block",
+        "Overwrite each delta with the one before it",
+        "Discard the deltas and use message_start"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The full text is the ordered concatenation of text deltas for a block. Keeping only the last delta or discarding them loses content."
+    },
+    {
+      "id": "ccdvf-t4-009",
+      "question": "What is the main user-experience benefit of streaming responses?",
+      "options": [
+        "It reduces the number of tokens generated",
+        "It shows partial output sooner, lowering perceived latency",
+        "It makes responses cheaper",
+        "It removes the need for max_tokens"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Streaming displays text as it is generated, so users see progress sooner. It does not change token counts, cost, or the need for limits."
+    },
+    {
+      "id": "ccdvf-t4-010",
+      "question": "Which of the following is NOT a reason to use streaming?",
+      "options": [
+        "Showing progressive output to users",
+        "Processing partial output as it arrives",
+        "Guaranteeing that the final answer will be shorter",
+        "Improving perceived responsiveness"
+      ],
+      "correctAnswer": 3,
+      "explanation": "Streaming changes delivery, not length. Progressive display, early processing, and responsiveness are all valid reasons."
+    },
+    {
+      "id": "ccdvf-t4-011",
+      "question": "A response has stop_reason set to end_turn. What does this mean?",
+      "options": [
+        "The model finished its turn naturally",
+        "The model hit the max_tokens limit",
+        "The model is requesting a tool",
+        "An error occurred"
+      ],
+      "correctAnswer": 1,
+      "explanation": "end_turn indicates a natural completion. Truncation, tool requests, and errors have their own signals."
+    },
+    {
+      "id": "ccdvf-t4-012",
+      "question": "A response has stop_reason set to max_tokens. What is the correct interpretation?",
+      "options": [
+        "The response is complete",
+        "The output was truncated because the token limit was reached",
+        "A tool was requested",
+        "A safety block was applied"
+      ],
+      "correctAnswer": 2,
+      "explanation": "max_tokens means generation stopped at the limit, so the output may be incomplete. It is not a successful complete answer."
+    },
+    {
+      "id": "ccdvf-t4-013",
+      "question": "A response has stop_reason set to stop_sequence. What does this indicate?",
+      "options": [
+        "The model crashed",
+        "One of the custom stop sequences in the request was generated",
+        "The max_tokens limit was reached",
+        "A tool was called"
+      ],
+      "correctAnswer": 2,
+      "explanation": "stop_sequence means generation halted because a custom stop sequence was produced. It is distinct from truncation or tool use."
+    },
+    {
+      "id": "ccdvf-t4-014",
+      "question": "Which stop_reason indicates that Claude has paused to request a tool?",
+      "options": [
+        "end_turn",
+        "max_tokens",
+        "tool_use",
+        "stop_sequence"
+      ],
+      "correctAnswer": 3,
+      "explanation": "tool_use signals that the application must execute the requested tool and return a result. The other reasons do not involve a tool request."
+    },
+    {
+      "id": "ccdvf-t4-015",
+      "question": "The application receives a response with stop_reason tool_use. What should it do next?",
+      "options": [
+        "Return the response to the user as the final answer",
+        "Execute the requested tools and send back matching tool_result blocks",
+        "Delete the conversation history",
+        "Increase max_tokens and resend the same request"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The application must run the requested tools and return results so Claude can continue. Treating the response as final leaves the tool request unanswered."
+    },
+    {
+      "id": "ccdvf-t4-016",
+      "question": "A response stops with max_tokens while producing a long answer. What is the best handling?",
+      "options": [
+        "Show it as complete",
+        "Raise the limit or request continuation, and indicate to the user if the answer is incomplete",
+        "Ignore it",
+        "Retry with temperature set to 2"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Handling truncation means either allowing more output or informing the user the answer is partial. Treating it as complete or ignoring it delivers unreliable results."
+    },
+    {
+      "id": "ccdvf-t4-017",
+      "question": "Why should an application check stop_reason before parsing output?",
+      "options": [
+        "It is unnecessary, since parsing always works",
+        "A truncated response may contain invalid or incomplete content that should not be trusted",
+        "stop_reason controls the billing rate",
+        "stop_reason is only used for images"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Truncated or unusual stops can leave output incomplete or malformed. Checking stop_reason prevents parsing errors and bad data."
+    },
+    {
+      "id": "ccdvf-t4-018",
+      "question": "Claude was asked for JSON, but the response stopped at max_tokens and the JSON is cut off. What should the application do?",
+      "options": [
+        "Parse the partial JSON anyway",
+        "Detect the truncation and retry with a higher limit or a more concise request, rather than parsing the partial output",
+        "Change temperature to fix the cutoff",
+        "Ignore the problem"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Partial JSON cannot be parsed reliably. Detecting truncation and adjusting the request is the correct response. Temperature does not solve truncation."
+    },
+    {
+      "id": "ccdvf-t4-019",
+      "question": "A response contains several content blocks of different types. What is the correct processing approach?",
+      "options": [
+        "Process only the first block",
+        "Iterate over all content blocks and handle each according to its type",
+        "Assume only text blocks exist",
+        "Assume only tool blocks exist"
+      ],
+      "correctAnswer": 2,
+      "explanation": "A response can contain multiple blocks of different types. Handling each by type ensures nothing is missed."
+    },
+    {
+      "id": "ccdvf-t4-020",
+      "question": "Can a text block appear before a tool_use block in the same response?",
+      "options": [
+        "No, text and tool blocks can never coexist",
+        "Yes, a response can include text before a tool_use block",
+        "Only tool_use blocks appear",
+        "Only text blocks appear"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Claude can explain its intent in text and then request a tool in the same response. Applications should handle both."
+    },
+    {
+      "id": "ccdvf-t4-021",
+      "question": "During a stream, tool input arrives in several input_json_delta events. When should the application execute the tool?",
+      "options": [
+        "On the first delta received",
+        "After the tool input block is complete and the JSON can be parsed",
+        "Before message_start",
+        "Never, because tools cannot run from streams"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Partial JSON is not valid until the block is complete. The tool should run only after the full input has been assembled and parsed."
+    },
+    {
+      "id": "ccdvf-t4-022",
+      "question": "Why must partial tool-input JSON be handled carefully during streaming?",
+      "options": [
+        "Partial JSON is always valid",
+        "Partial JSON is incomplete until all deltas are received, so it must be assembled before parsing",
+        "Partial JSON is binary data",
+        "Tool inputs cannot be streamed at all"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Each delta is only a fragment, so parsing early will fail. Assembling the full string before parsing is required."
+    },
+    {
+      "id": "ccdvf-t4-023",
+      "question": "In a stream, when does the final stop_reason typically become available to the application?",
+      "options": [
+        "In message_start",
+        "In message_delta near the end of the stream",
+        "It never becomes available",
+        "In every ping event"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The final stop_reason is provided in message_delta, near the end of the stream. Applications should wait for it before deciding what to do next."
+    },
+    {
+      "id": "ccdvf-t4-024",
+      "question": "What does a content_block_stop event indicate?",
+      "options": [
+        "The start of a content block",
+        "The end of that specific content block",
+        "The end of the entire stream",
+        "An error"
+      ],
+      "correctAnswer": 2,
+      "explanation": "content_block_stop marks the end of one content block. Other blocks may follow, so it does not end the whole message."
+    },
+    {
+      "id": "ccdvf-t4-025",
+      "question": "How does a non-streaming response relate to a streamed response?",
+      "options": [
+        "Both reflect the same final content, but streaming delivers it incrementally",
+        "Streaming produces a different final answer",
+        "Non-streaming responses omit the text",
+        "Non-streaming responses omit usage data"
+      ],
+      "correctAnswer": 1,
+      "explanation": "The final content is the same concept in both cases. Streaming simply delivers it in pieces as events."
+    },
+    {
+      "id": "ccdvf-t4-026",
+      "question": "Which transport mechanism is used for streaming responses from the Messages API?",
+      "options": [
+        "WebSocket only",
+        "Server-sent events over HTTP",
+        "FTP",
+        "gRPC only"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Streaming uses server-sent events over an HTTP connection. The other transports are not the mechanism described for the API."
+    },
+    {
+      "id": "ccdvf-t4-027",
+      "question": "A network connection drops partway through a stream. What is the best handling?",
+      "options": [
+        "Assume the response is complete",
+        "Detect the incomplete stream, handle the partial output appropriately, and retry if it is safe",
+        "Ignore the problem",
+        "Generate a new API key"
+      ],
+      "correctAnswer": 2,
+      "explanation": "An interrupted stream means the output may be incomplete. The application should detect it and decide whether to retry, especially if the request has side effects."
+    },
+    {
+      "id": "ccdvf-t4-028",
+      "question": "A chat UI renders streamed text as Markdown. What is a sound approach?",
+      "options": [
+        "Render every delta as final HTML without checks",
+        "Handle partial Markdown safely while text is still arriving",
+        "Disable streaming for all Markdown",
+        "Strip all formatting from the text"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Partial Markdown can render incorrectly if handled naively. Buffering or safely handling incomplete formatting avoids display problems. Disabling streaming is unnecessary."
+    },
+    {
+      "id": "ccdvf-t4-029",
+      "question": "A developer wants the response to stop as soon as the text '###' appears. Which setting should be used?",
+      "options": [
+        "stop_sequences containing '###'",
+        "tool_choice set to any",
+        "temperature set to 2",
+        "A system prompt that says stop"
+      ],
+      "correctAnswer": 1,
+      "explanation": "stop_sequences halts generation when a specified string appears. The other settings do not stop generation at a marker."
+    },
+    {
+      "id": "ccdvf-t4-030",
+      "question": "Why should an application log stop_reason values in production?",
+      "options": [
+        "Logging is unnecessary",
+        "It helps detect truncation, unexpected tool loops, and other response issues",
+        "It only tracks billing",
+        "It should never be logged"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Tracking stop reasons reveals patterns such as frequent truncation or tool loops. This supports troubleshooting and tuning. The other options are incorrect."
+    },
+    {
+      "id": "ccdvf-t4-031",
+      "question": "A team sees many responses ending with max_tokens. What is the most useful conclusion?",
+      "options": [
+        "The responses are succeeding",
+        "The limit may be too low for the task, or the prompt may be requesting too much output",
+        "The model is broken and should be deleted",
+        "Stop reasons have no meaning"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Frequent truncation suggests the output budget is too small or the task is too broad. Adjusting limits or prompts addresses it."
+    },
+    {
+      "id": "ccdvf-t4-032",
+      "question": "Code checks only whether stop_reason equals end_turn and treats every other value as success. What is the problem?",
+      "options": [
+        "There is no problem",
+        "It would mishandle tool_use, max_tokens, and stop_sequence cases",
+        "It only fails in streaming",
+        "It only affects billing"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Each stop reason requires different handling. Treating all non-end_turn values as success hides truncation and skips tool execution."
+    },
+    {
+      "id": "ccdvf-t4-033",
+      "question": "In a non-streaming response, where should an application look for input and output token counts?",
+      "options": [
+        "The usage field",
+        "The stop_reason field",
+        "The id field",
+        "HTTP headers only, always"
+      ],
+      "correctAnswer": 1,
+      "explanation": "The usage field reports token counts. stop_reason explains why generation ended, and id identifies the message."
+    },
+    {
+      "id": "ccdvf-t4-034",
+      "question": "Which description correctly contrasts streaming and batch processing?",
+      "options": [
+        "Batch is for real-time display, and streaming is for offline jobs",
+        "Streaming delivers output in real time, while batch processing handles large asynchronous workloads",
+        "They are identical in every way",
+        "Batch processing produces streamed events"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Streaming serves interactive, real-time delivery. Batch processing is designed for asynchronous bulk work. The other options reverse or confuse them."
+    },
+    {
+      "id": "ccdvf-t4-035",
+      "question": "A single text block arrives as several content_block_delta events. How should the application assemble it?",
+      "options": [
+        "Treat each delta as a separate block",
+        "Concatenate deltas that belong to the same content block index, in order",
+        "Keep only the last delta",
+        "Discard the deltas"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Deltas for one block are combined in order to rebuild its content. Treating them as separate blocks or keeping only the last one loses or fragments text."
+    },
+    {
+      "id": "ccdvf-t4-036",
+      "question": "What is the purpose of the index value in content_block_delta events?",
+      "options": [
+        "It is meaningless and can be ignored",
+        "It identifies which content block the delta belongs to, so the application routes it correctly",
+        "It is a billing identifier",
+        "It is an encryption key"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The index tells the application which content block a delta belongs to. Ignoring it can mix content from different blocks."
+    },
+    {
+      "id": "ccdvf-t4-037",
+      "question": "After a streamed tool_use response, the application sends the tool result in the next request. What must the message history include?",
+      "options": [
+        "Nothing, because history is not needed",
+        "The assistant's tool_use block followed by the user's matching tool_result block",
+        "Only the last user message",
+        "History stored automatically by the API"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The API is stateless, so the application must send the assistant's tool_use block and the matching tool_result in order. The other options do not provide the needed context."
+    },
+    {
+      "id": "ccdvf-t4-038",
+      "question": "A user interface needs to show the first words of a long answer as quickly as possible. Which approach fits best?",
+      "options": [
+        "Non-streaming with max_tokens set to 1",
+        "Streaming responses",
+        "Batch processing",
+        "Token counting"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Streaming displays early tokens immediately, which suits this goal. Batch processing is asynchronous, and token counting does not generate output."
+    },
+    {
+      "id": "ccdvf-t4-039",
+      "question": "Which field indicates which custom stop sequence caused generation to stop?",
+      "options": [
+        "stop_sequence",
+        "usage",
+        "id",
+        "model"
+      ],
+      "correctAnswer": 1,
+      "explanation": "The stop_sequence field identifies the matched sequence when generation stops because of it. The other fields hold different information."
+    },
+    {
+      "id": "ccdvf-t4-040",
+      "question": "Which approach best describes production-ready response handling?",
+      "options": [
+        "Assume every response succeeds and check only the text",
+        "Handle every stop_reason explicitly, handle stream errors, assemble content blocks correctly, and log outcomes",
+        "Ignore streaming events to simplify the code",
+        "Parse output before checking whether it is complete"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Robust handling covers each stop reason, stream errors, correct assembly of blocks, and logging. The other options skip essential checks."
+    }
+  ]
+}
