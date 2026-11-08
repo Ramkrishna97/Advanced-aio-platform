@@ -35,10 +35,10 @@ class LearningController {
     record CommentInput(String text,Long parentId,Long materialId) {}
     record ResourceView(Long id,String title,String description,String content,String originalName,String contentType,boolean hasFile,boolean available) {}
     record NoteInput(String title,String text) {}
-    record QuizQuestionInput(String question,List<String> options,Integer correctAnswer) {}
+    record QuizQuestionInput(String question,List<String> options,Integer correctAnswer,String explanation) {}
     record QuizAnswerInput(Map<String,Integer> answers) {}
-    record QuizQuestionView(String id,String question,List<String> options,Integer correctAnswer) {}
-    record QuizResultItem(String id,Integer selectedAnswer,int correctAnswer,boolean correct) {}
+    record QuizQuestionView(String id,String question,List<String> options,Integer correctAnswer,String explanation) {}
+    record QuizResultItem(String id,Integer selectedAnswer,int correctAnswer,boolean correct,String explanation) {}
     record QuizResult(int total,int correct,List<QuizResultItem> results) {}
     private User user(String auth) {
         if(auth==null||!auth.startsWith("Bearer ")) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"Sign in required");
@@ -102,22 +102,22 @@ class LearningController {
     @DeleteMapping("/topics/{id}/video") void removeVideo(@RequestHeader(value="Authorization",required=false)String auth,@PathVariable Long id){teacher(auth);LearningTopic t=topic(id);videoStore.delete(t.videoFile);t.videoFile=null;t.videoName=null;t.videoType=null;topics.save(t);}
     @GetMapping("/topics/{id}/quiz") List<QuizQuestionView> quiz(@RequestHeader(value="Authorization",required=false)String auth,@PathVariable Long id) {
         User user=user(auth); LearningTopic topic=topic(id); List<QuizStore.Question> questions=quizzes.questionsFor(module(topic.moduleId),topic);
-        return questions.stream().map(question -> new QuizQuestionView(question.id(),question.question(),question.options(),Set.of("TEACHER","ADMIN").contains(user.role()) ? question.correctAnswer() : null)).toList();
+        return questions.stream().map(question -> new QuizQuestionView(question.id(),question.question(),question.options(),Set.of("TEACHER","ADMIN").contains(user.role()) ? question.correctAnswer() : null, Set.of("TEACHER","ADMIN").contains(user.role()) ? question.explanation() : null)).toList();
     }
     @PostMapping("/topics/{id}/quiz/questions") QuizQuestionView addQuizQuestion(@RequestHeader(value="Authorization",required=false)String auth,@PathVariable Long id,@RequestBody QuizQuestionInput input) {
         teacher(auth); LearningTopic topic=topic(id); List<String> options=input.options()==null?List.of():input.options().stream().map(value -> value==null?"":value.trim()).toList();
         if(input.question()==null||input.question().isBlank()||options.size()!=4||options.stream().anyMatch(String::isBlank)||input.correctAnswer()==null||input.correctAnswer()<0||input.correctAnswer()>3)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Enter a question, four answers, and the correct answer");
-        quizzes.addQuestion(module(topic.moduleId),topic,input.question(),options,input.correctAnswer());
+        quizzes.addQuestion(module(topic.moduleId),topic,input.question(),options,input.correctAnswer(), input.explanation());
         List<QuizStore.Question> saved=quizzes.questionsFor(module(topic.moduleId),topic);
         QuizStore.Question question=saved.get(saved.size()-1);
-        return new QuizQuestionView(question.id(),question.question(),question.options(),question.correctAnswer());
+        return new QuizQuestionView(question.id(),question.question(),question.options(),question.correctAnswer(), question.explanation());
     }
     @PostMapping("/topics/{id}/quiz/submit") QuizResult submitQuiz(@RequestHeader(value="Authorization",required=false)String auth,@PathVariable Long id,@RequestBody QuizAnswerInput input) {
         user(auth); LearningTopic topic=topic(id); Map<String,Integer> answers=input.answers()==null?Map.of():input.answers();
         List<QuizResultItem> results=quizzes.questionsFor(module(topic.moduleId),topic).stream().map(question -> {
             Integer selected=answers.get(question.id()); boolean correct=selected!=null&&selected==question.correctAnswer();
-            return new QuizResultItem(question.id(),selected,question.correctAnswer(),correct);
+            return new QuizResultItem(question.id(),selected,question.correctAnswer(),correct, question.explanation());
         }).toList();
         return new QuizResult(results.size(),(int)results.stream().filter(QuizResultItem::correct).count(),results);
     }
