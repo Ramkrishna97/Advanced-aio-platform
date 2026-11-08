@@ -1,0 +1,488 @@
+{
+  "schemaVersion": 1,
+  "subject": "Claude Certified Developer - Foundations (CCDV-F)",
+  "topicId": 1,
+  "topic": "Claude API Fundamentals and the Messages API",
+  "questionnaires": [
+    {
+      "id": "ccdvf-t1-001",
+      "question": "Which parameter must always be included in a Messages API request, in addition to model and messages?",
+      "options": [
+        "temperature",
+        "max_tokens",
+        "system",
+        "metadata"
+      ],
+      "correctAnswer": 2,
+      "explanation": "max_tokens is required and sets the maximum number of tokens to generate. temperature, system, and metadata are optional."
+    },
+    {
+      "id": "ccdvf-t1-002",
+      "question": "Which roles are valid in the messages array of a Messages API request?",
+      "options": [
+        "user and assistant",
+        "user, assistant, and system",
+        "human and bot",
+        "input and output"
+      ],
+      "correctAnswer": 1,
+      "explanation": "The messages array uses the user and assistant roles. System instructions are passed in the separate top-level system parameter, not as a role inside messages."
+    },
+    {
+      "id": "ccdvf-t1-003",
+      "question": "How is the content of a Messages API response structured?",
+      "options": [
+        "A single plain string in all cases",
+        "An array of content blocks such as text or tool_use blocks",
+        "A binary file that must be decoded",
+        "An XML document with fixed tags"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Response content is an array of content blocks, which may include text blocks and tool_use blocks. Treating it as a single string ignores tool calls and multi-block responses."
+    },
+    {
+      "id": "ccdvf-t1-004",
+      "question": "Where does a Messages API response report how many tokens were used?",
+      "options": [
+        "In an HTTP cookie",
+        "In the usage field of the response",
+        "In the stop_sequences field",
+        "In the id field"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The usage field reports input and output token counts. The stop_sequences field and id field do not carry usage information."
+    },
+    {
+      "id": "ccdvf-t1-005",
+      "question": "What does the id field in a Messages API response identify?",
+      "options": [
+        "The API key used for the request",
+        "The individual message returned by the API",
+        "The model version only",
+        "The end user who made the request"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The id identifies the specific message response, which is useful for logging and support requests. It does not identify the key, the model version, or the user."
+    },
+    {
+      "id": "ccdvf-t1-006",
+      "question": "The Messages API is described as stateless. What does this mean for a multi-turn chat application?",
+      "options": [
+        "The API stores the full conversation history automatically between calls",
+        "The application must send the relevant conversation history in each request",
+        "Only the first message of a conversation is processed",
+        "Conversations cannot span more than one request"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Stateless means the API does not retain conversation memory between calls. The application must include the history it wants Claude to consider each time."
+    },
+    {
+      "id": "ccdvf-t1-007",
+      "question": "A developer wants to include earlier assistant replies in a new request so Claude has context. How should these be provided?",
+      "options": [
+        "As assistant-role messages placed in order within the messages array",
+        "Only inside the system prompt as plain text",
+        "As tool_result blocks",
+        "They cannot be included in a request"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Prior assistant turns are included as assistant-role messages in the order they occurred. Placing them only in the system prompt or treating them as tool results does not represent the conversation structure correctly."
+    },
+    {
+      "id": "ccdvf-t1-008",
+      "question": "What does the max_tokens parameter control?",
+      "options": [
+        "The minimum length of the response",
+        "The maximum number of tokens the model may generate in its response",
+        "The size of the context window",
+        "The number of messages allowed in the array"
+      ],
+      "correctAnswer": 2,
+      "explanation": "max_tokens caps the output length. It does not set a minimum, does not define the context window, and does not count messages."
+    },
+    {
+      "id": "ccdvf-t1-009",
+      "question": "A response has stop_reason set to end_turn. What does this indicate?",
+      "options": [
+        "The output was truncated by the token limit",
+        "The model finished its response naturally",
+        "The model is requesting a tool to be run",
+        "An error occurred during generation"
+      ],
+      "correctAnswer": 2,
+      "explanation": "end_turn means the model reached a natural stopping point. Truncation corresponds to max_tokens, tool requests correspond to tool_use, and errors are returned as HTTP error responses."
+    },
+    {
+      "id": "ccdvf-t1-010",
+      "question": "If generation halts because the model produced one of the custom stop_sequences provided in the request, what stop_reason is returned?",
+      "options": [
+        "stop_sequence",
+        "max_tokens",
+        "error",
+        "end_turn always"
+      ],
+      "correctAnswer": 1,
+      "explanation": "When a custom stop sequence is matched, the stop_reason is stop_sequence. max_tokens indicates truncation by length, and end_turn is reserved for natural completion."
+    },
+    {
+      "id": "ccdvf-t1-011",
+      "question": "Why might a team pin a specific model version rather than always using a general alias in production?",
+      "options": [
+        "Aliases are always slower than pinned versions",
+        "Behavior can change when an alias is updated to a new model, which may affect outputs",
+        "Pinned versions are free of charge",
+        "Aliases cannot be used with the Messages API"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Aliases may point to newer models over time, which can change output behavior. Pinning gives more predictable results. Speed and cost are not the main reasons, and aliases are valid API inputs."
+    },
+    {
+      "id": "ccdvf-t1-012",
+      "question": "Which HTTP header carries the API key when calling the Claude API directly?",
+      "options": [
+        "Authorization with a session cookie",
+        "x-api-key",
+        "X-Session-Token",
+        "Accept-Language"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The x-api-key header carries the API key. Session cookies and session tokens are not used for API key authentication, and Accept-Language is unrelated."
+    },
+    {
+      "id": "ccdvf-t1-013",
+      "question": "Which header specifies the version of the Anthropic API a request targets?",
+      "options": [
+        "api-version",
+        "anthropic-version",
+        "x-version",
+        "version-id"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The anthropic-version header is required and specifies the API version. The other header names are not used by the Claude API."
+    },
+    {
+      "id": "ccdvf-t1-014",
+      "question": "Which content block type is used to send plain text in a message?",
+      "options": [
+        "text",
+        "string_only",
+        "raw",
+        "markdown"
+      ],
+      "correctAnswer": 1,
+      "explanation": "The text block type carries plain text. The other types are not valid content block types for text input."
+    },
+    {
+      "id": "ccdvf-t1-015",
+      "question": "In the Python SDK, which class is used to create a synchronous client?",
+      "options": [
+        "Anthropic",
+        "Client",
+        "OpenAI",
+        "API"
+      ],
+      "correctAnswer": 1,
+      "explanation": "The Python SDK provides the Anthropic class for synchronous calls. The other class names do not belong to the Anthropic SDK."
+    },
+    {
+      "id": "ccdvf-t1-016",
+      "question": "A developer needs non-blocking calls in an asyncio-based Python application. Which SDK class should be used?",
+      "options": [
+        "AsyncAnthropic",
+        "asyncio.run only",
+        "ThreadAnthropic",
+        "AsyncClient"
+      ],
+      "correctAnswer": 1,
+      "explanation": "AsyncAnthropic is the asynchronous client in the Python SDK. Wrapping synchronous calls in asyncio.run does not provide a proper async client, and the other names are not SDK classes."
+    },
+    {
+      "id": "ccdvf-t1-017",
+      "question": "What is the purpose of the metadata parameter, such as a user_id field, in a Messages API request?",
+      "options": [
+        "It changes the model being used",
+        "It provides an optional identifier for tracking or abuse monitoring",
+        "It is required for every request",
+        "It sets the billing rate"
+      ],
+      "correctAnswer": 2,
+      "explanation": "metadata is optional and lets developers attach an identifier, such as an end-user ID, for tracking. It does not select a model, is not required, and does not set billing rates."
+    },
+    {
+      "id": "ccdvf-t1-018",
+      "question": "Why should a developer check whether a model is deprecated before building an application on it?",
+      "options": [
+        "Deprecated models are always faster",
+        "Deprecated models may be retired, which would break the application",
+        "Deprecation lowers the price automatically",
+        "Deprecation has no effect on applications"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Deprecated models may eventually be retired, causing failed requests. Checking deprecation status helps plan a migration. Deprecation does not improve speed or price."
+    },
+    {
+      "id": "ccdvf-t1-019",
+      "question": "A request's input exceeds the model's context window. What is the typical result?",
+      "options": [
+        "The API silently summarizes the input",
+        "The API returns an error and does not process the request",
+        "The response is generated for free",
+        "The excess tokens are ignored and the rest is processed"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Requests exceeding the context window are rejected with an error. The API does not silently summarize or drop input, and such requests are not free."
+    },
+    {
+      "id": "ccdvf-t1-020",
+      "question": "A developer wants to estimate the number of input tokens for a request before sending it. Which option is designed for this?",
+      "options": [
+        "The token counting endpoint",
+        "The stop_reason field",
+        "The batch results file",
+        "An MCP resource"
+      ],
+      "correctAnswer": 1,
+      "explanation": "The token counting endpoint estimates input tokens for a request. The other options serve different purposes."
+    },
+    {
+      "id": "ccdvf-t1-021",
+      "question": "Why is the request-id returned in response headers useful?",
+      "options": [
+        "It grants a billing discount",
+        "It helps identify a specific request when contacting support or debugging",
+        "It selects the model for the next call",
+        "It enables streaming"
+      ],
+      "correctAnswer": 2,
+      "explanation": "A request ID uniquely identifies a call, which helps with debugging and support escalations. It does not affect billing, model selection, or streaming."
+    },
+    {
+      "id": "ccdvf-t1-022",
+      "question": "What does setting stream to true in a Messages API request change?",
+      "options": [
+        "The response is returned as one complete JSON object after generation finishes",
+        "The response is delivered incrementally as a series of server-sent events",
+        "The response is returned as binary data",
+        "The response is returned as XML"
+      ],
+      "correctAnswer": 2,
+      "explanation": "With streaming enabled, the response arrives incrementally as server-sent events. A single JSON object is the non-streaming format."
+    },
+    {
+      "id": "ccdvf-t1-023",
+      "question": "Which factor is generally NOT a primary consideration when selecting a Claude model for a task?",
+      "options": [
+        "Latency requirements",
+        "Cost constraints",
+        "Capability needed for the task",
+        "The color of the developer dashboard"
+      ],
+      "correctAnswer": 4,
+      "explanation": "Latency, cost, and capability are central to model selection. The color of the dashboard has no bearing on the choice."
+    },
+    {
+      "id": "ccdvf-t1-024",
+      "question": "Why should a browser-based application not call the Claude API directly with a secret API key embedded in its code?",
+      "options": [
+        "Browsers cannot send HTTP requests",
+        "The key would be exposed to anyone who inspects the client code",
+        "The API only accepts requests from mobile devices",
+        "The key expires immediately in browsers"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Secret keys in client-side code can be extracted by anyone. Requests should be routed through a server that holds the key. The other statements are incorrect."
+    },
+    {
+      "id": "ccdvf-t1-025",
+      "question": "Which environment variable does the official Python SDK read for the API key by default when no key is passed explicitly?",
+      "options": [
+        "CLAUDE_KEY",
+        "ANTHROPIC_API_KEY",
+        "API_TOKEN",
+        "OPENAI_API_KEY"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The SDK reads ANTHROPIC_API_KEY by default. The other variable names are not used by the Anthropic SDK."
+    },
+    {
+      "id": "ccdvf-t1-026",
+      "question": "An API call returns HTTP 401. What does this most likely indicate?",
+      "options": [
+        "The rate limit was exceeded",
+        "An authentication problem, such as a missing or invalid API key",
+        "The server is overloaded",
+        "The tool output was malformed"
+      ],
+      "correctAnswer": 2,
+      "explanation": "401 indicates an authentication failure. Rate limiting returns 429, and server overload is a separate error category."
+    },
+    {
+      "id": "ccdvf-t1-027",
+      "question": "An API call returns HTTP 400. What does this typically indicate?",
+      "options": [
+        "The request was malformed or invalid",
+        "The request succeeded with a warning",
+        "The model is overloaded",
+        "The rate limit was reached"
+      ],
+      "correctAnswer": 1,
+      "explanation": "400 indicates an invalid request, such as a missing required field or a malformed structure. Overload and rate limit responses use different status codes."
+    },
+    {
+      "id": "ccdvf-t1-028",
+      "question": "What is the typical valid range for the temperature parameter?",
+      "options": [
+        "0 to 1",
+        "-1 to 1",
+        "0 to 100",
+        "1 to 10"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Temperature is typically set between 0 and 1. Values outside that range are not valid for the Claude API."
+    },
+    {
+      "id": "ccdvf-t1-029",
+      "question": "Which formats are valid for the content of a user message?",
+      "options": [
+        "Only arrays of content blocks",
+        "Either a plain string or an array of content blocks",
+        "Only JSON objects",
+        "Only base64-encoded strings"
+      ],
+      "correctAnswer": 2,
+      "explanation": "A user message content can be a plain string as shorthand or an array of content blocks for mixed content like text and images. The other options are too restrictive or incorrect."
+    },
+    {
+      "id": "ccdvf-t1-030",
+      "question": "What is the main purpose of prefilling the start of an assistant response in a request?",
+      "options": [
+        "To encrypt the response",
+        "To steer how the response begins",
+        "To increase max_tokens automatically",
+        "To bypass rate limits"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Prefilling provides the beginning of the assistant's reply, which influences the format and direction of what follows. It does not encrypt output, change limits, or bypass rate limits."
+    },
+    {
+      "id": "ccdvf-t1-031",
+      "question": "Why is it good practice to keep the official SDK up to date?",
+      "options": [
+        "Updates may add features and fixes that improve reliability",
+        "Updates slow down API calls",
+        "Updates are required to be billed",
+        "Updates have no effect on the application"
+      ],
+      "correctAnswer": 1,
+      "explanation": "SDK updates commonly include new features, bug fixes, and security improvements. The other statements are incorrect."
+    },
+    {
+      "id": "ccdvf-t1-032",
+      "question": "A developer sends a request with a missing required field. Which approach best diagnoses the problem?",
+      "options": [
+        "Retry the same request repeatedly",
+        "Read the error message and response body, then correct the request structure",
+        "Switch to a larger model",
+        "Increase temperature"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Error responses describe the problem, so reading them and fixing the request is the right approach. Retrying the same invalid request or changing the model will not fix a structural error."
+    },
+    {
+      "id": "ccdvf-t1-033",
+      "question": "Which statement about the messages array is correct?",
+      "options": [
+        "It may contain only one message per request",
+        "It holds the ordered conversation turns sent to the model",
+        "It must include a system message",
+        "It is stored permanently on Anthropic's servers"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The messages array holds the ordered turns of the conversation for that request. It does not have to be a single message, does not require a system message, and is not stored server-side by the API."
+    },
+    {
+      "id": "ccdvf-t1-034",
+      "question": "A developer wants to limit the response length to a short summary. Which combination is the most appropriate starting point?",
+      "options": [
+        "Set max_tokens to a small value and instruct the model to be concise",
+        "Set temperature to 1 and remove the system prompt",
+        "Remove max_tokens and add more messages",
+        "Use streaming, which shortens responses automatically"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Setting max_tokens caps length, and instructions guide the model to write concisely. Temperature does not control length, and streaming does not shorten output."
+    },
+    {
+      "id": "ccdvf-t1-035",
+      "question": "Which is the correct way to provide a system prompt to the Messages API?",
+      "options": [
+        "As a top-level system parameter",
+        "As a role named system in the messages array",
+        "As an HTTP header named system",
+        "As a tool_result block"
+      ],
+      "correctAnswer": 1,
+      "explanation": "The system prompt is passed as a top-level system parameter. Role-based system messages and header-based approaches are not how the API accepts system instructions."
+    },
+    {
+      "id": "ccdvf-t1-036",
+      "question": "A team needs to know whether an API call succeeded before processing its output. What should they check first?",
+      "options": [
+        "The HTTP status code and the response structure",
+        "The color of the response text",
+        "The length of the user's name",
+        "The developer's email address"
+      ],
+      "correctAnswer": 1,
+      "explanation": "The HTTP status code indicates success or failure, and the response structure confirms the content is usable. The other options are unrelated."
+    },
+    {
+      "id": "ccdvf-t1-037",
+      "question": "Which is a valid reason to use the system parameter rather than placing instructions in the user message?",
+      "options": [
+        "It separates persistent behavioral instructions from the user's request, keeping them consistent across turns",
+        "It increases the context window",
+        "It is the only way to receive a response",
+        "It disables billing"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Using the system parameter keeps behavioral instructions separate from user content, which supports consistency. It does not change the context window, is not required to receive responses, and does not affect billing."
+    },
+    {
+      "id": "ccdvf-t1-038",
+      "question": "In a conversation, the user asks a question that depends on information from the first turn. What must the application do?",
+      "options": [
+        "Nothing, because Claude remembers all previous calls automatically",
+        "Include the first turn in the messages array of the new request",
+        "Start a new API key",
+        "Send only the new question with max_tokens set to zero"
+      ],
+      "correctAnswer": 2,
+      "explanation": "Because the API is stateless, the application must include the earlier turn in the messages array. The other options do not provide the needed context."
+    },
+    {
+      "id": "ccdvf-t1-039",
+      "question": "A developer wants to use the same prompt across many requests but keep the response format consistent. Which practice is most appropriate?",
+      "options": [
+        "Store the prompt template in code and reuse it, with clear formatting instructions",
+        "Write a new prompt each time without reference",
+        "Use the highest temperature for each request",
+        "Remove the system parameter to reduce variation"
+      ],
+      "correctAnswer": 1,
+      "explanation": "Reusable prompt templates with explicit formatting instructions promote consistency. Writing prompts ad hoc, raising temperature, or removing system instructions all tend to reduce consistency."
+    },
+    {
+      "id": "ccdvf-t1-040",
+      "question": "Which statement best describes the relationship between the Messages API and the Anthropic SDKs?",
+      "options": [
+        "The SDKs are the only way to call the API, and the HTTP interface does not exist",
+        "The SDKs are convenient wrappers that call the same underlying HTTP API",
+        "The SDKs run the model locally on the developer's machine",
+        "The SDKs replace the need for authentication"
+      ],
+      "correctAnswer": 2,
+      "explanation": "The official SDKs wrap the HTTP Messages API, so both approaches reach the same endpoint. The SDKs do not run the model locally and still require authentication."
+    }
+  ]
+}
